@@ -1,0 +1,31 @@
+Chess/Card Game
+Goal
+•	To kill the opponent’s King just as in chess
+The board
+•	Basic Chess Board
+Basic Mechanics
+•	Players will have a King piece at the beginning
+•	In order to add more pieces to the board, each player must play cards from their hands
+•	There will be a “mana” based resource (can think of a different name later) which will be used to play cards. To use these resources, “mana” cards will be tapped (turned to their side).
+•	There will be a combat/battle phase where players can move a piece (based on chess movements) 
+Setup
+•	Minimum 50 card deck
+•	Each player begins with a King piece already on the board 
+	o	Can choose where to place at the start?
+	o	Limit the places to choose?
+•	Each player is dealt 6 cards
+Phases of a turn
+•	Pre – Main Phase (can think of a better name later)
+	o	Untapping resources (doesn’t have to physically turn when designing graphics, but need some indication of how much resource to use
+	o	Draw a card
+•	Main Phase
+	o	Player can place 1 card from their hand into their mana pile
+	o	Player can play cards from their hand by paying their mana cost
+			For the moment, all cards will be pieces
+			An extension would be to add action cards
+	o	Pieces cannot move during the turn they are played
+•	Combat/battle phase
+	o	Player can select a piece and move them as per chess
+•	Post combat phase
+	o	Optional phase where player can play more cards if they have resources left
+•	End phase
