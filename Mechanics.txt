@@ -3,6 +3,9 @@ Goal
 •	To kill the opponent’s King just as in chess
 The board
 •	Basic Chess Board
+•	Mana pile
+•	Player's hands
+•	Scrap pile
 Basic Mechanics
 •	Players will have a King piece at the beginning
 •	In order to add more pieces to the board, each player must play cards from their hands
@@ -15,17 +18,17 @@ Setup
 	o	Limit the places to choose?
 •	Each player is dealt 6 cards
 Phases of a turn
-•	Pre – Main Phase (can think of a better name later)
+•	Recouperation phase (temporary name)
 	o	Untapping resources (doesn’t have to physically turn when designing graphics, but need some indication of how much resource to use
 	o	Draw a card
-•	Main Phase
+•	Strategy Phase
 	o	Player can place 1 card from their hand into their mana pile
 	o	Player can play cards from their hand by paying their mana cost
 			For the moment, all cards will be pieces
 			An extension would be to add action cards
 	o	Pieces cannot move during the turn they are played
-•	Combat/battle phase
+•	Action phase
 	o	Player can select a piece and move them as per chess
-•	Post combat phase
+•	Fall back phase
 	o	Optional phase where player can play more cards if they have resources left
 •	End phase
