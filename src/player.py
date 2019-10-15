@@ -1,13 +1,15 @@
-from card import *
+from .card import Card
 from collections import deque
 from random import shuffle
+from . import config
 
 class Player:
 
     def __init__(self):
         self.deck = deque()
         self.hand = []
-        self.mana = []
+        self.mana_pile = []
+        self.mana = config.INIT_MANA
 
         for i in range(23):
             new = Card("pawn")
