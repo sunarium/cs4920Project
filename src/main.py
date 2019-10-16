@@ -17,3 +17,13 @@ if __name__ == '__main__':
     # e.play_card(0, (1, 3))
     # e.play_card(0, (1, 4))
     e.debug_dump()
+    while not e.game_ended:
+        userCommand = str(input())
+        if userCommand == "end game":
+            e.game_ended = True
+        elif userCommand == "end turn":
+            e.turn_switch()
+            e.debug_dump()
+        elif userCommand == "next":
+            e.phase_change()
+            e.debug_dump()

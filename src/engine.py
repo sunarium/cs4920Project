@@ -122,6 +122,13 @@ class GameEngine(object):
         self.waiting_player = Player(PlayerColor.BLACK)
         self.board = Board()
 
+        """
+        0 = main phase
+        1 = movement phase
+        2 = 2nd main phase
+        """
+        self.phase = 0;
+
         # turn flags
         self.has_placed_to_mana = False
         self.has_moved_piece = False
@@ -137,6 +144,7 @@ class GameEngine(object):
         self.waiting_player.debug_dump()
         print('board:')
         print(str(self.board))
+        print(self.phase)
 
     def get_game_state(self):
         """
@@ -218,8 +226,16 @@ class GameEngine(object):
 
     # called when player indicates to end his turn
     def turn_switch(self):
+        self.phase = 0
         self.current_player.on_turn_end()
         self.has_placed_to_mana = False
         self.has_moved_piece = False
         self.current_player, self.waiting_player = self.waiting_player, self.current_player
         self.current_player.on_turn_start()
+
+    def phase_change(self):
+        self.phase += 1
+        if self.phase > 2:
+            self.turn_switch()
+
+
