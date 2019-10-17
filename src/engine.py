@@ -2,7 +2,7 @@ from typing import Tuple, List, Union
 import random
 from pygame import Vector2
 from .board import Board
-from .piece import PIECES
+from .piece import Piece
 from .playercolor import PlayerColor
 from . import config
 from .exceptions import *
@@ -24,8 +24,7 @@ class PieceCard(Card):
         super().__init__(name, owner)
 
     def played(self, board, target):
-        card = PIECES[self.name](target, self.owner)
-        board.add_piece(card)
+        Piece(self.name, target, self.owner, board)
 
 class Player(object):
     def __init__(self, color:PlayerColor):
