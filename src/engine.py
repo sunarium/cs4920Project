@@ -146,7 +146,7 @@ class GameEngine(object):
         self.waiting_player.debug_dump()
         print('board:')
         # print(str(self.board))
-        self.board.pretty_print()
+        print(self.board)
         print(self.phase)
 
     def get_game_state(self):
