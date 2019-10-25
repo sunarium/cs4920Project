@@ -59,6 +59,9 @@ class Player(object):
 
         # clear mana
         self.turn_mana = config.INIT_MANA
+        # untaps
+        for c in self.hand:
+            c.tapped = False
 
     def draw_card(self):
         if len(self.hand) > config.HAND_SIZE:
@@ -142,7 +145,8 @@ class GameEngine(object):
         print('waiting player:')
         self.waiting_player.debug_dump()
         print('board:')
-        print(str(self.board))
+        # print(str(self.board))
+        self.board.pretty_print()
         print(self.phase)
 
     def get_game_state(self):
@@ -236,5 +240,3 @@ class GameEngine(object):
         self.phase += 1
         if self.phase > 2:
             self.turn_switch()
-
-
