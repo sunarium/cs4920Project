@@ -129,7 +129,7 @@ class GameEngine(object):
         1 = movement phase
         2 = 2nd main phase
         """
-        self.phase = 0;
+        self.phase = 0
 
         # turn flags
         self.has_placed_to_mana = False
