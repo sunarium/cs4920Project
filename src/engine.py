@@ -218,14 +218,21 @@ class GameEngine(object):
             raise IllegalPlayerActionError("already moved a piece before")
 
         piece = self.board.get_piece(old_pos)
-        if not piece or new_pos not in piece.get_legal_moves(self.board):
+        if not piece or new_pos not in piece.get_legal_moves(self.board): # check movement legality
             raise IllegalMoveError
         piece.move_to(new_pos)
+        self.current_player.has_moved_piece = True
 
-        if self.board.get_piece(new_pos): # captured
+        # enemy piece capturing
+        captured_piece:Piece = self.board.get_piece(new_pos)
+        if captured_piece: # captured
             self.board.remove_at(new_pos)
 
-        self.current_player.has_moved_piece = True
+        # if king is captured, player made this move wins
+        if captured_piece.name == 'king':
+            self.winner = self.current_player
+            self.game_ended = True
+
 
     # called when player indicates to end his turn
     def turn_switch(self):

@@ -10,19 +10,19 @@ from .board import Board
 
 class Piece():
     MOVEMENT_VECTOR = {
-        'rook': (
+        'rook': [
             (1, 0),
             (-1, 0),
             (0, 1),
             (0, -1)
-        ),
-        'castle': (
+        ],
+        'bishop': [
             (1, 1),
             (1, -1),
             (-1, 1),
             (-1, -1)
-        ),
-        'knight': (
+        ],
+        'knight': [
             (1, 2),
             (1, -2),
             (-1, 2),
@@ -31,8 +31,8 @@ class Piece():
             (2, -1),
             (-2, 1),
             (-2, -1),
-        ),
-        'queen': (
+        ],
+        'queen': [
             (1, 0),
             (-1, 0),
             (0, 1),
@@ -41,8 +41,8 @@ class Piece():
             (1, -1),
             (-1, 1),
             (-1, -1)
-        ),
-        'king': (
+        ],
+        'king': [
             (1, 0),
             (-1, 0),
             (0, 1),
@@ -51,7 +51,35 @@ class Piece():
             (1, -1),
             (-1, 1),
             (-1, -1)
-        )
+        ]
+    }
+
+    INITIAL_POSITION = {
+        'pawn': [
+            (0, 1),
+            (1, 1),
+            (2, 1),
+            (3, 1),
+            (4, 1),
+            (5, 1),
+            (6, 1),
+            (7, 1),
+        ],
+        'rook': [
+            (0, 0),
+            (7, 0)
+        ],
+        'knight': [
+            (1, 0),
+            (6, 0)
+        ],
+        'bishop': [
+            (2, 0),
+            (5, 0)
+        ],
+        'queen': (3, 0),
+        'king': (4, 0)
+
     }
 
     def __init__(self, name:str, pos:Union[Vector2, Tuple], owner:PlayerColor, board:Board=None):
