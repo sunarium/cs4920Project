@@ -1,9 +1,11 @@
-PIECES = ['pawn', 'rook', 'queen']
+PIECES = ['pawn', 'rook', 'bishop', 'knight', 'queen']
 
 DECK_AMOUNT = {
-    'pawn': 30,
+    'pawn': 23,
     'rook': 6,
-    'queen': 2
+    'bishop': 9,
+    'knight': 9,
+    'queen': 3
 }
 
 HAND_SIZE = 6
@@ -11,12 +13,14 @@ HAND_SIZE = 6
 # costs of deploying each pieces
 MANA_COST = {
     'pawn': 1,
+    'bishop': 3,
+    'knight': 3,
     'rook': 5,
     'queen': 10
 }
 
 # mana avaliable to player initially
-INIT_MANA = 1
+INIT_MANA = 0
 
 # mana gained each turn, set to 0 to turn off
 MANA_PER_TURN = 0

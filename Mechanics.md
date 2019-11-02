@@ -34,7 +34,7 @@ To kill the opponent’s King just as in chess
         - For the moment, all cards will be pieces
         - An extension would be to add action cards
     - Pieces cannot move during the turn they are played
-    - Action phase
+- Action phase
         - Player can select a piece and move them as per chess
 - Fall back phase
     - Optional phase where player can play more cards if they have resources left

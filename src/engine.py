@@ -32,8 +32,12 @@ class Player(object):
         self.hand = []
         self.deck = []
         self.mana_pile = []
-        self.turn_mana = config.INIT_MANA
+        self.turn_mana = len(self.mana_pile)
         self._init_deck()
+
+        # draw initial 6 cards
+        for i in range(6):
+            self.draw_card()
 
     def debug_dump(self):
         print(f'''
@@ -57,19 +61,28 @@ class Player(object):
     def on_turn_start(self):
         # hook
 
-        # clear mana
-        self.turn_mana = config.INIT_MANA
+        # reset mana
+        self.turn_mana = len(self.mana_pile)
         # untaps
         for c in self.hand:
             c.tapped = False
 
+        # draw a card
+        self.draw_card()
+
     def draw_card(self):
+        # no maximum hand size
         if len(self.hand) > config.HAND_SIZE:
             raise IllegalPlayerActionError("Hand full")
+
+        """ might not work if the order of the deck matters down the line
         card = random.choice(self.deck)
         self.deck.remove(card)
         self.hand.append(card)
-        return card
+        """
+
+        self.hand.append(self.deck.pop(0))
+        #return card
 
     def tap(self, index):
         try:
@@ -98,6 +111,7 @@ class Player(object):
             raise IllegalCardSelection
         self.hand.remove(card)
         self.mana_pile.append(card)
+        self.turn_mana += 1
 
     def play_card(self, index, target, board):
         try:
@@ -125,9 +139,11 @@ class GameEngine(object):
         self.board = Board()
 
         """
-        0 = main phase
-        1 = movement phase
-        2 = 2nd main phase
+        0 = recouperation phase
+        1 = strategy phase
+        2 = action phase
+        3 = fall back phase
+        4 = end phase
         """
         self.phase = 0
 
@@ -245,5 +261,5 @@ class GameEngine(object):
 
     def phase_change(self):
         self.phase += 1
-        if self.phase > 2:
+        if self.phase > 4:
             self.turn_switch()
