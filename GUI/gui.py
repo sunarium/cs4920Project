@@ -76,11 +76,31 @@ def text_objects(text, colour, size):
     return textSurface, textSurface.get_rect()
 
 def text_to_button(msg, colour, buttonx, buttony, buttonwidth, buttonheight, size = "small"):
+    '''
+    render text to the center of the button
+    :param msg: text to be rendered
+    :param colour:
+    :param buttonx:
+    :param buttony:
+    :param buttonwidth:
+    :param buttonheight:
+    :param size:
+    :return:
+    '''
     textSurf, textRect = text_objects(msg, colour, size)
     textRect.center = ((buttonx+(buttonwidth/2)), buttony+(buttonheight/2))
     gameDisplay.blit(textSurf, textRect)
 
 def message_to_screen(msg,colour, x_displace=0, y_displace=0, size = "small"):
+    '''
+    render text to current screen at coordinates
+    :param msg: text need to be rendered
+    :param colour: color of the text
+    :param x_displace: coordinate, origin at center of the screen
+    :param y_displace:
+    :param size: size of the text
+    :return: None
+    '''
     textSurf, textRect = text_objects(msg, colour, size)
     textRect.center = (display_width/2) + x_displace, (display_height/2) + y_displace
     gameDisplay.blit(textSurf, textRect)
@@ -365,8 +385,6 @@ def start_menu():
             score = 100 # testing
             #checkScore(score)
             retrieve_name(score)
-            
-        
         pygame.display.update()
         clock.tick(15)
 
@@ -466,7 +484,6 @@ def display_new():
                            -180,
                            "medium")    
 
-        
         button("back", 480,400,110,50, red, light_red, action = "back")
         pygame.display.update()
         clock.tick(10)
@@ -493,7 +510,6 @@ def display_local():
         button("back", 480,400,110,50, red, light_red, action = "back")
         pygame.display.update()
         clock.tick(10)
-
 
 
 # join button screen

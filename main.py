@@ -1,6 +1,3 @@
-from src.board import Board
-from src.piece import *
-from src.playercolor import PlayerColor
 from src.engine import GameEngine
 
 if __name__ == '__main__':
@@ -16,6 +13,9 @@ if __name__ == '__main__':
             e.debug_dump()
         elif userCommand == "next":
             e.phase_change()
+            e.debug_dump()
+        elif userCommand == "draw":
+            e.draw_card()
             e.debug_dump()
         elif userCommand == "add mana":
             index = int(input("select index "))

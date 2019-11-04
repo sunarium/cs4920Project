@@ -1,130 +1,17 @@
-from typing import Tuple, List, Union
-import random
+from typing import List, Tuple, Union
 from pygame import Vector2
+from enum import IntEnum
 from .board import Board
-from .piece import Piece
-from .playercolor import PlayerColor
-from . import config
+from .card import *
 from .exceptions import *
+from .piece import Piece
+from .player import Player
+from .playercolor import PlayerColor
 
-class Card(object):
-    def __init__(self, name:str, owner:PlayerColor):
-        self.name = name
-        self.owner = owner
-        self.tapped = False
-
-    def played(self, board, target):
-        pass
-
-    def __str__(self):
-        return f'Card(name={self.name}, owner={self.owner}, tapped={self.tapped})'
-
-class PieceCard(Card):
-    def __init__(self, name, owner):
-        super().__init__(name, owner)
-
-    def played(self, board, target):
-        Piece(self.name, target, self.owner, board)
-
-class Player(object):
-    def __init__(self, color:PlayerColor):
-        self.color = color
-        self.hand = []
-        self.deck = []
-        self.mana_pile = []
-        self.turn_mana = len(self.mana_pile)
-        self._init_deck()
-
-        # draw initial 6 cards
-        for i in range(6):
-            self.draw_card()
-
-    def debug_dump(self):
-        print(f'''
-        this is player {self.color}
-        hand  { ','.join([str(c) for c in self.hand]) }
-        mpile {','.join([str(c) for c in self.mana_pile])}
-        mana  {self.turn_mana}
-        ''')
-
-
-    def _init_deck(self):
-        for card_name, amount in config.DECK_AMOUNT.items():
-            self.deck += [PieceCard(card_name, self.color)] * amount
-        random.shuffle(self.deck)
-
-    def on_turn_end(self):
-        # hook
-        # try not to use this one for consistency (use on_turn_start instead)
-        pass
-
-    def on_turn_start(self):
-        # hook
-
-        # reset mana
-        self.turn_mana = len(self.mana_pile)
-        # untaps
-        for c in self.hand:
-            c.tapped = False
-
-        # draw a card
-        self.draw_card()
-
-    def draw_card(self):
-        # no maximum hand size
-        if len(self.hand) > config.HAND_SIZE:
-            raise IllegalPlayerActionError("Hand full")
-
-        """ might not work if the order of the deck matters down the line
-        card = random.choice(self.deck)
-        self.deck.remove(card)
-        self.hand.append(card)
-        """
-
-        self.hand.append(self.deck.pop(0))
-        #return card
-
-    def tap(self, index):
-        try:
-            card = self.mana_pile[index]
-        except IndexError:
-            raise IllegalCardSelection
-        if card.tapped: # already tapped
-            raise IllegalCardSelection
-        card.tapped = True
-        self.turn_mana += config.MANA_GAIN[card.name]
-
-    def untap(self, index):
-        try:
-            card = self.mana_pile[index]
-        except IndexError:
-            raise IllegalCardSelection
-        if not card.tapped: # not tapped
-            raise IllegalCardSelection
-        card.tapped = False
-        self.turn_mana -= config.MANA_GAIN[card.name]
-
-    def place_to_mana_pile(self, index):
-        try:
-            card = self.hand[index]
-        except IndexError:
-            raise IllegalCardSelection
-        self.hand.remove(card)
-        self.mana_pile.append(card)
-        self.turn_mana += 1
-
-    def play_card(self, index, target, board):
-        try:
-            card = self.hand[index]
-        except IndexError:
-            raise IllegalCardSelection
-        if self.turn_mana < config.MANA_COST[card.name]:
-            raise IllegalPlayerActionError('Insufficient mana')
-        self.hand.remove(card)
-        self.turn_mana -= config.MANA_COST[card.name]
-        card.played(board, target)
-
-
+class GamePhase(IntEnum):
+    MAIN = 0
+    MOVEMENT = 1
+    SECOND_MAIN = 2
 
 class GameEngine(object):
     def __init__(self, debug=False):
@@ -138,14 +25,7 @@ class GameEngine(object):
         self.waiting_player = Player(PlayerColor.BLACK)
         self.board = Board()
 
-        """
-        0 = recouperation phase
-        1 = strategy phase
-        2 = action phase
-        3 = fall back phase
-        4 = end phase
-        """
-        self.phase = 0
+        self.phase = GamePhase.MAIN
 
         # turn flags
         self.has_placed_to_mana = False
@@ -184,7 +64,7 @@ class GameEngine(object):
 
     # recouperation phase
     # player tap a card in mana pile for mana
-    # raise exception(?) if index out of range
+    # raise exception if index out of range
     def tap(self, tapped_index:int):
         self.current_player.tap(tapped_index)
 
@@ -198,7 +78,6 @@ class GameEngine(object):
         return self.current_player.draw_card()
 
     # Strategy Phase
-
     # for generating visual clue of where to deploy a new piece.
     def valid_positions(self, card_index:int) -> List[Vector2]:
         # todo: it is needed for text engine?
@@ -249,10 +128,8 @@ class GameEngine(object):
             self.winner = self.current_player
             self.game_ended = True
 
-
     # called when player indicates to end his turn
     def turn_switch(self):
-        self.phase = 0
         self.current_player.on_turn_end()
         self.has_placed_to_mana = False
         self.has_moved_piece = False
@@ -261,5 +138,12 @@ class GameEngine(object):
 
     def phase_change(self):
         self.phase += 1
-        if self.phase > 4:
+        if self.phase > 2:
+            self.phase = 0
             self.turn_switch()
+
+class LocalGameEngine(GameEngine):
+    pass
+
+class NetworkgameEngine(GameEngine):
+    pass
