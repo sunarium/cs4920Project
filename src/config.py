@@ -41,13 +41,30 @@ FREE_KING = False
 ######################
 # GRAPHICS CONSTANTS #
 ######################
+ASSET_PATH = '../assets'
 FRAME_RATE = 60
 SCREEN_RESOLUTION = 1200, 900
-
+MENU_FONT = 'comicsansms'
+TEXT_SIZE_XS = 15
+TEXT_SIZE_S = 25
+TEXT_SIZE_M = 50
+TEXT_SIZE_L = 75
+COLORS = {
+    "MAIN_MENU_BG": (218,165,32),       # goldenrod
+    "BUTTON_COL1": (0, 155, 0),         # green
+    "BUTTON_COL1_LIGHT": (0, 255, 0),   # light green
+    "BUTTON_COL2": (200, 200, 0),       # yellow
+    "BUTTON_COL2_LIGHT": (255,255,0),   # yellow light
+    "BUTTON_COL3": (200, 0, 0),         # red
+    "BUTTON_COL3_LIGHT": (255, 0, 0),   #light red
+    "BLACK": (0, 0, 0)
+}
+WINDOW_TITLE = 'Chess: The Gathering'
+ICON_PATH = '../assets/icon.png'
 
 ############################
 # NETWORKED GAME CONSTANTS #
 ############################
 
 DEFAULT_PORT = 11235
-TIMEOUT = 60
+CONNECTION_TIMEOUT = 60 # needed?
