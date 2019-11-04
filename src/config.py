@@ -1,5 +1,7 @@
+######################
+# GAMEPLAY CONSTANTS #
+######################
 PIECES = ['pawn', 'rook', 'bishop', 'knight', 'queen']
-
 DECK_AMOUNT = {
     'pawn': 23,
     'rook': 6,
@@ -7,9 +9,7 @@ DECK_AMOUNT = {
     'knight': 9,
     'queen': 3
 }
-
 HAND_SIZE = 6
-
 # costs of deploying each pieces
 MANA_COST = {
     'pawn': 1,
@@ -18,7 +18,6 @@ MANA_COST = {
     'rook': 5,
     'queen': 10
 }
-
 # mana avaliable to player initially
 INIT_MANA = 0
 
@@ -38,3 +37,17 @@ BOARD_SIZE = 8
 # king placement policy
 # if true, player can choose where to place the king
 FREE_KING = False
+
+######################
+# GRAPHICS CONSTANTS #
+######################
+FRAME_RATE = 60
+SCREEN_RESOLUTION = 1200, 900
+
+
+############################
+# NETWORKED GAME CONSTANTS #
+############################
+
+DEFAULT_PORT = 11235
+TIMEOUT = 60

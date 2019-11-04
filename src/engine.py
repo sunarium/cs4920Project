@@ -1,12 +1,14 @@
 from typing import List, Tuple, Union
 from pygame import Vector2
 from enum import IntEnum
+
 from .board import Board
 from .card import *
 from .exceptions import *
 from .piece import Piece
 from .player import Player
 from .playercolor import PlayerColor
+from . import config
 
 class GamePhase(IntEnum):
     MAIN = 0
@@ -145,5 +147,12 @@ class GameEngine(object):
 class LocalGameEngine(GameEngine):
     pass
 
+class NETWORKSTATUS(IntEnum):
+    AWAITING_CLIENT = 0
+    CONNECTING_TO_SERVER = 1
+    CONNECTED = 2
+
 class NetworkgameEngine(GameEngine):
-    pass
+    def __init__(self, isHost, debug=False, port=config.DEFAULT_PORT):
+        super().__init__()
+
