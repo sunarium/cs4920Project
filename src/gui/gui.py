@@ -516,6 +516,11 @@ def display_new():
         pygame.draw.line(gameDisplay, black, (0, 600), (1200, 600), 1)
         pygame.draw.line(gameDisplay, black, (900, 0), (900, 900), 1)
 
+        #Draw the board
+        for i in range(0, 8):
+            for j in range(0, 8):
+                chess_tile("{}{}".format(chr(65+j), 1+i), 150 + (50*j), 500 - (50*i), 50, 50, white, white,
+                           action="{}{}".format(chr(65+j), 1+i))
         pygame.display.update()
         clock.tick(10)
 
