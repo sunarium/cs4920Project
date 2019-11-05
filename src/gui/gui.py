@@ -260,7 +260,7 @@ def display_controls():
         button("back", 480,400,110,50, red, light_red, action = "back")
         pygame.display.update()
         clock.tick(10)
-        
+
 def takeSecond(elem):
     return elem[1]
 
@@ -471,7 +471,27 @@ def button(text, x, y, width, height, inactive_colour, active_colour, action = N
         pygame.draw.rect(gameDisplay, inactive_colour, (x,y,width,height))
 
     text_to_button(text, black, x, y, width, height)
-    
+
+
+def chess_tile(text, x, y, width, height, inactive_colour, active_colour, action=None):
+    cur = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    global gameFinish
+    global enemyButtonArray
+    global gameStarted
+
+    if x + width >= cur[0] >= x and y + height >= cur[1] >= y:
+        pygame.draw.rect(gameDisplay, active_colour, (x, y, width, height))
+        #if click[0] == 1 and action != None:
+
+        button_helper(text, x, y, width, height, action)
+
+
+    else:
+        pygame.draw.rect(gameDisplay, inactive_colour, (x, y, width, height))
+
+    text_to_button(text, black, x, y, width, height)
+
 # new button screen
 # DO STUFF HERE
 def display_new():
@@ -493,7 +513,8 @@ def display_new():
                            "medium")"""
 
         button("back", 1090,0,110,50, red, light_red, action = "back")
-        #pygame.draw.line(gameDisplay, black, 0, 600, )
+        pygame.draw.line(gameDisplay, black, (0, 600), (1200, 600), 1)
+        pygame.draw.line(gameDisplay, black, (900, 0), (900, 900), 1)
 
         pygame.display.update()
         clock.tick(10)
