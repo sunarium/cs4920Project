@@ -92,7 +92,7 @@ def text_to_button(msg, colour, buttonx, buttony, buttonwidth, buttonheight, siz
     :return:
     '''
     textSurf, textRect = text_objects(msg, colour, size)
-    textRect.center = ((buttonx+(buttonwidth/2)), buttony+(buttonheight/2))
+    textRect.center = (int((buttonx+(buttonwidth/2))), int(buttony+(buttonheight/2)))
     gameDisplay.blit(textSurf, textRect)
 
 def message_to_screen(msg,colour, x_displace=0, y_displace=0, size = "small"):
@@ -106,12 +106,12 @@ def message_to_screen(msg,colour, x_displace=0, y_displace=0, size = "small"):
     :return: None
     '''
     textSurf, textRect = text_objects(msg, colour, size)
-    textRect.center = (display_width/2) + x_displace, (display_height/2) + y_displace
+    textRect.center = int((display_width/2) + x_displace), int((display_height/2) + y_displace)
     gameDisplay.blit(textSurf, textRect)
 
 def message_to_screen_not_center(msg,colour, x_displace=0, y_displace=0, size = "small"):
     textSurf, textRect = text_objects(msg, colour, size)
-    textRect.center = x_displace, y_displace
+    textRect.center = int(x_displace), int(y_displace)
     gameDisplay.blit(textSurf, textRect)
 
 def start_game_loop():
@@ -486,13 +486,15 @@ def display_new():
         
         #todo Insert code here to display the game / board etc
 
-        message_to_screen("Insert game screen here",
+        """message_to_screen("Insert game screen here",
                            black,
                            0,
                            -180,
-                           "medium")    
+                           "medium")"""
 
-        button("back", 480,400,110,50, red, light_red, action = "back")
+        button("back", 1090,0,110,50, red, light_red, action = "back")
+        #pygame.draw.line(gameDisplay, black, 0, 600, )
+
         pygame.display.update()
         clock.tick(10)
 
@@ -583,6 +585,7 @@ def display_join(word = ""):
         button("back", 480,400,110,50, red, light_red, action = "back")
         pygame.display.update()
         clock.tick(10)
+
 
 start_menu()
 
