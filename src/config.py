@@ -44,10 +44,17 @@ FREE_KING = False
 FRAME_RATE = 60
 SCREEN_RESOLUTION = 1200, 900
 
+# button positions
+# colours
+
+
+
 
 ############################
 # NETWORKED GAME CONSTANTS #
 ############################
 
 DEFAULT_PORT = 11235
-TIMEOUT = 60
+HANDSHAKE_TIMEOUT = 10
+CLIENT_REQUEST = b'ClientHello'
+SERVER_RESPONSE = b'ServerWavesback'

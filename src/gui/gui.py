@@ -5,6 +5,9 @@ import time
 import random
 import threading
 import os
+
+from src import config
+
 #import testDraw
 
 pygame.init()
@@ -24,8 +27,10 @@ yellow = (200, 200, 0)
 light_yellow = (255,255,0)
 goldenrod = (218,165,32)
 
-display_width = 640
-display_height = 480
+# display_width = 640
+# display_height = 480
+display_width = 1200
+display_height = 900
 
 game_name = 'Chess: The Gathering'
 
@@ -341,7 +346,11 @@ def display_score(names):
 def start_menu():
     intro = True
     global gameFinish
-
+    '''
+    ge = GameEngine()
+    if ge.status == error:
+        display error message
+    '''
     while intro:
         #gameDisplay.blit(background, (0,0))
         gameDisplay.fill(goldenrod)
@@ -475,7 +484,7 @@ def display_new():
 
         gameDisplay.fill(white)
         
-        #Insert code here to display the game / board etc
+        #todo Insert code here to display the game / board etc
 
         message_to_screen("Insert game screen here",
                            black,

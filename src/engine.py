@@ -1,6 +1,8 @@
 from typing import List, Tuple, Union
 from pygame import Vector2
 from enum import IntEnum
+import socket
+import threading
 
 from .board import Board
 from .card import *
@@ -147,12 +149,66 @@ class GameEngine(object):
 class LocalGameEngine(GameEngine):
     pass
 
-class NETWORKSTATUS(IntEnum):
-    AWAITING_CLIENT = 0
-    CONNECTING_TO_SERVER = 1
-    CONNECTED = 2
+class NetworkStatus(IntEnum):
+    INITIALIZED = -1
+    VALIDATING = 0
+    AWAITING_CONNECTION = 1
+    CONNECTING_TO_SERVER = 2
+    CONNECTED = 3
+    CONNECTION_CLOSED = 4
+    ERROR = 5
 
 class NetworkgameEngine(GameEngine):
-    def __init__(self, isHost, debug=False, port=config.DEFAULT_PORT):
-        super().__init__()
+    def __init__(self, debug=False, port=config.DEFAULT_PORT):
+        super().__init__(debug)
+        self.error_message = ''
+        self.network_status = NetworkStatus.INITIALIZED
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.is_my_turn:bool = False
+
+    def _handshake(self, addr):
+        self.socket.settimeout(config.HANDSHAKE_TIMEOUT)
+        self.socket.sendto(config.CLIENT_REQUEST, (addr, config.DEFAULT_PORT))
+        try:
+            msg, server_addr = self.socket.recvfrom(1024)
+        except socket.timeout:
+            self.network_status = NetworkStatus.ERROR
+            self.error_message = 'handshake timeout'
+            return
+        else:
+            print(msg, server_addr)
+        if msg != config.SERVER_RESPONSE:
+            self.network_status = NetworkStatus.ERROR
+            self.error_message = 'server response do mot match'
+            print(msg)
+            return
+        self.network_status = NetworkStatus.CONNECTED
+        self.socket.settimeout(0) # disable timeout
+
+    def _await_handshake(self):
+        self.socket.bind(('', config.DEFAULT_PORT))
+        msg = b''
+        while msg != config.CLIENT_REQUEST:
+            msg, client_addr = self.socket.recvfrom(1024)
+        self.socket.sendto(config.SERVER_RESPONSE, client_addr)
+        self.network_status = NetworkStatus.CONNECTED
+
+    # called if run as client
+    def connect_to(self, server_addr:str):
+        # validate
+        try:
+            server_ip = socket.gethostbyname(server_addr)
+        except socket.gaierror:
+            self.network_status = NetworkStatus.ERROR
+            self.error_message = 'Invalid Hostname or ip'
+            return
+        self.network_status = NetworkStatus.VALIDATING
+        threading.Thread(target=self._handshake, args=(server_ip,)).start()
+
+    # called if run as host
+    def host_game(self):
+        threading.Thread(target=self._await_handshake).start()
+
+    def get_network_status(self):
+        return self.network_status
 
