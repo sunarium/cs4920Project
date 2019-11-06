@@ -6,6 +6,7 @@ import random
 import threading
 import os
 
+from src.engine import GameEngine
 from src import config
 
 #import testDraw
@@ -66,6 +67,9 @@ exitApp = False
 highscoreName = []
 highscoreScore = []
 currentNumHighscore = 0
+
+e = GameEngine(debug=True)
+e.draw_card()
 
 def text_objects(text, colour, size):
     if size == "small":
@@ -490,7 +494,24 @@ def chess_tile(text, x, y, width, height, inactive_colour, active_colour, action
     else:
         pygame.draw.rect(gameDisplay, inactive_colour, (x, y, width, height))
 
-    text_to_button(text, black, x, y, width, height)
+def card_button(card, x, y, width, height, inactive_colour, active_colour, action=None):
+    cur = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    global gameFinish
+    global enemyButtonArray
+    global gameStarted
+
+    if x + width >= cur[0] >= x and y + height >= cur[1] >= y:
+        pygame.draw.rect(gameDisplay, active_colour, (x, y, width, height))
+        # if click[0] == 1 and action != None:
+
+        #button_helper(text, x, y, width, height, action)
+
+
+    else:
+        pygame.draw.rect(gameDisplay, inactive_colour, (x, y, width, height))
+
+    #text_to_button(text, black, x, y, width, height)
 
 # new button screen
 # DO STUFF HERE
@@ -516,6 +537,7 @@ def display_new():
         pygame.draw.line(gameDisplay, black, (0, 600), (1200, 600), 1)
         pygame.draw.line(gameDisplay, black, (900, 0), (900, 900), 1)
 
+
         #Draw the board
         for i in range(0, 8):
             for j in range(0, 8):
@@ -528,6 +550,22 @@ def display_new():
                         colour = black
                 chess_tile("{}{}".format(chr(65+j), 1+i), 150 + (67*j), 500 - (67*i), 67, 67, colour, colour,
                            action="{}{}".format(chr(65+j), 1+i))
+
+        pygame.draw.line(gameDisplay, black, (150, 31), (150, 567), 1)
+        pygame.draw.line(gameDisplay, black, (150, 31), (686, 31), 1)
+        pygame.draw.line(gameDisplay, black, (686, 31), (686, 567), 1)
+        pygame.draw.line(gameDisplay, black, (686, 567), (150, 567), 1)
+
+        #display deck
+        pygame.draw.rect(gameDisplay, red, (975, 650, 150, 200))
+        message_to_screen_not_center("{}/50".format(e.get_curr_deck_size()), black, 1050, 750, size="small")
+
+        #GameEngine.get_curr_deck_size()
+
+        card = e.get_curr_hand()
+        firstCard = card[0]
+        card_button(firstCard, 100, 650, 150, 200,red,red)
+
         pygame.display.update()
         clock.tick(10)
 

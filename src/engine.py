@@ -62,6 +62,11 @@ class GameEngine(object):
         """
         pass
 
+    def get_curr_deck_size(self):
+        return len(self.current_player.deck)
+
+    def get_curr_hand(self):
+        return self.current_player.hand
     # functions that alters game state; called by graphics engine
     # do we do the phase check in game engine or graphics engine?
     # for now we dont have phase checking.
