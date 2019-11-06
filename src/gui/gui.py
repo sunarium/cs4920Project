@@ -519,7 +519,14 @@ def display_new():
         #Draw the board
         for i in range(0, 8):
             for j in range(0, 8):
-                chess_tile("{}{}".format(chr(65+j), 1+i), 150 + (50*j), 500 - (50*i), 50, 50, white, white,
+                colour = white
+                if (i % 2) != 0:
+                    if (j % 2) == 0:
+                        colour = black
+                if (i % 2) == 0:
+                    if (j % 2) != 0:
+                        colour = black
+                chess_tile("{}{}".format(chr(65+j), 1+i), 150 + (67*j), 500 - (67*i), 67, 67, colour, colour,
                            action="{}{}".format(chr(65+j), 1+i))
         pygame.display.update()
         clock.tick(10)
