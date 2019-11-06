@@ -511,7 +511,8 @@ def card_button(card, x, y, width, height, inactive_colour, active_colour, actio
     else:
         pygame.draw.rect(gameDisplay, inactive_colour, (x, y, width, height))
 
-    #text_to_button(text, black, x, y, width, height)
+    text_to_button(card.name, black, x, y, width, height)
+    text_to_button(str(config.MANA_COST[card.name]), black, x-50, y-75, width, height)
 
 # new button screen
 # DO STUFF HERE
