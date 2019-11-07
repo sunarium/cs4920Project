@@ -45,8 +45,8 @@ class GameEngine(object):
             self.current_player.draw_card()
             self.waiting_player.draw_card()
 
-        Piece("king", Vector2(4, 0), -1, self.board)
-        Piece("king", Vector2(4, 7), 1, self.board)
+        Piece("king", Vector2(4, 7), -1, self.board)
+        Piece("king", Vector2(4, 0), 1, self.board)
 
         # for display
         self.newly_drawn = None
