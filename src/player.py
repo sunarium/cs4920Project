@@ -13,6 +13,15 @@ class Player(object):
         self.mana_pile:List[Card] = []
         self._init_deck()
 
+        tapped_card = Card("pawn", -1)
+        tapped_card.tapped = True
+        self.mana_pile.append(Card("pawn",-1))
+        self.mana_pile.append(Card("pawn", -1))
+        self.mana_pile.append(Card("pawn", -1))
+        self.mana_pile.append(tapped_card)
+        self.mana_pile.append(tapped_card)
+
+
     def debug_dump(self):
         print(f'''
         this is player {self.color}
