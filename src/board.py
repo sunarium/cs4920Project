@@ -2,9 +2,9 @@ from pygame import Vector2
 from typing import Tuple, Union
 from src.piece import Piece
 
-from .exceptions import *
-from .playercolor import PlayerColor
-from . import config
+from src.exceptions import *
+from src.playercolor import PlayerColor
+from src import config
 
 class Board(object):
     def __init__(self):

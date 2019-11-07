@@ -19,3 +19,6 @@ class PieceCard(Card):
 
     def played(self, board, target):
         Piece(self.name, target, self.owner, board)
+
+    def asset_name(self):
+        return f'card_{self.name}_{"white" if self.owner == -1 else "black"}.png'

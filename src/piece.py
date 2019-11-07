@@ -3,9 +3,9 @@ from typing import List
 from pygame import Vector2
 from typing import Tuple, Union
 
-from . import config
-from .playercolor import PlayerColor
-from .board import Board
+from src import config
+from src.playercolor import PlayerColor
+
 
 
 class Piece():
@@ -82,7 +82,7 @@ class Piece():
 
     }
 
-    def __init__(self, name:str, pos:Union[Vector2, Tuple], owner:PlayerColor, board:Board=None):
+    def __init__(self, name:str, pos:Union[Vector2, Tuple], owner:PlayerColor, board=None):
         self.pos:Vector2 = Vector2(pos)
         self.owner = owner
         self.name = name
@@ -93,7 +93,7 @@ class Piece():
             self.board = board
             board.add_piece(self)
 
-    def get_legal_moves(self, board:Board=None) -> List[Vector2]:
+    def get_legal_moves(self, board=None) -> List[Vector2]:
         if not board:
             board = self.board
         if self.name == 'pawn':
@@ -125,8 +125,11 @@ class Piece():
     def __str__(self):
         return f'Piece(name={self.name}, pos={self.pos})'
 
-if __name__ == '__main__':
-    b = Board()
-    p = Piece('pawn', (1,3), 1, b)
-    p1 = Piece('rook', (1,1), 1, b)
-    p2 = Piece('queen', (0,3), 1, b)
+    def asset_name(self) -> str:
+        return f'piece_{self.name}_{"white" if self.owner == -1 else "black"}.png'
+
+# if __name__ == '__main__':
+#     b = Board()
+#     p = Piece('pawn', (1,3), 1, b)
+#     p1 = Piece('rook', (1,1), 1, b)
+#     p2 = Piece('queen', (0,3), 1, b)

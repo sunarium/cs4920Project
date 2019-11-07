@@ -4,7 +4,7 @@ from PIL import ImageDraw
 import itertools
 
 font = ImageFont.truetype('arial', 25)
-card_size = w, h = (150, 300)
+card_size = w, h = (150, 200)
 piece_size = wp, hp = (75, 75)
 bg_color = (255, 0, 0) # red
 text_color = (0, 0, 0) # black

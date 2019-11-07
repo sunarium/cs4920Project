@@ -165,10 +165,16 @@ buttons = {
 # sizes
 board_size = (600, 600)
 piece_size = (75, 75)
-card_size = (300, 100)
+card_size = (150, 200)
 # positions
-board_pos = (100, 0)
-hand_start_pos = ()
+board_pos = (150, 0)
+hand_start_pos = (20, 680)
+deck_text_pos = (1000, 700)
+# hand drawing shenanigans
+hand_draw_area = pygame.Rect((0, 661), (900, 239))
+
+# margin size
+hand_margin = 20
 
 
 

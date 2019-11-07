@@ -3,8 +3,9 @@ from .button import Button
 from src.engine import GameEngine, PlayerColor
 
 import pygame
+from pygame import Vector2 as V2
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Tuple
 
 
 class GameState(ABC):
@@ -89,6 +90,7 @@ class LocalGame(GameState):
         super().__init__()
         self.buttons = [Button(self, config.buttons['back_to_main_ingame'])]
         self.engine = GameEngine(debug=True)
+
         print()
 
     def handle_event(self, events:List[pygame.event.Event]):
@@ -106,15 +108,47 @@ class LocalGame(GameState):
         self.render_ui_sprite(screen)
         for b in self.buttons:
             b.render(screen)
-        # todo draw pieces
-        # todo draw hand
-        # todo draw deck size
+
+        # draw pieces
+        for p in self.engine.board.pieces:
+            assetfile = p.asset_name()
+            surf = pygame.image.load(config.assetsroot+assetfile)
+            location = (p.pos.elementwise()  * V2(config.piece_size)) + config.board_pos
+            screen.blit(surf, location)
+
+        # draw hand
+        location = V2(config.hand_start_pos)
+        screen.set_clip(config.hand_draw_area)
+        for c in self.engine.get_curr_hand():
+            # todo if user dragged it, the starting position will change.
+            surf = pygame.image.load(config.assetsroot+c.asset_name())
+            screen.blit(surf, location)
+            location.x += (config.card_size[0] + config.hand_margin)
+        screen.set_clip(None)
+
+        # draw deck size
+        text = "{}/50".format(self.engine.get_curr_deck_size())
+        screen.blit(
+            config.ui_fonts.l.render(text, True, config.ui_colors.black),
+            config.deck_text_pos
+        )
+
         # todo draw mana bar
+
         # todo draw phase indicator
+
 
     # render sprites that doesnt need to move
     def render_ui_sprite(self, screen):
         screen.blit(config.game_background, (0,0))
+
+    def click_to_board_pos(self, mouse_pos)-> pygame.Vector2:
+        mouse_pos = pygame.Vector2(mouse_pos)
+        mouse_pos -= config.board_pos
+        mouse_pos /= config.piece_size
+        return mouse_pos
+
+
 
 
 state_list = {
