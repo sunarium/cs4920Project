@@ -5,6 +5,7 @@ import socket
 import threading
 
 from .board import Board
+from .piece import Piece
 from .exceptions import *
 from .player import Player
 from .playercolor import PlayerColor
@@ -39,6 +40,14 @@ class GameEngine(object):
 
         self.phase = GamePhase.MAIN
 
+        #setup game state
+        for i in range(0,6):
+            self.current_player.draw_card()
+            self.waiting_player.draw_card()
+
+        Piece("king", Vector2(4, 7), -1, self.board)
+        Piece("king", Vector2(4, 0), 1, self.board)
+
         # for display
         self.newly_drawn = None
 
@@ -51,6 +60,7 @@ class GameEngine(object):
 
         # initialize the game
         self.current_player.on_turn_start()
+
 
     def debug_dump(self):
         if not self.debug:
