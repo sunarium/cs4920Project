@@ -2,15 +2,15 @@ from .playercolor import PlayerColor
 from . import config
 from .exceptions import *
 from .card import *
+from typing import List
 import random
 
 class Player(object):
     def __init__(self, color:PlayerColor):
         self.color = color
-        self.hand = []
-        self.deck = []
-        self.mana_pile = []
-        self.turn_mana = config.INIT_MANA
+        self.hand:List[Card] = []
+        self.deck:List[Card] = []
+        self.mana_pile:List[Card] = []
         self._init_deck()
 
     def debug_dump(self):
@@ -20,7 +20,6 @@ class Player(object):
         mpile {','.join([str(c) for c in self.mana_pile])}
         mana  {self.turn_mana}
         ''')
-
 
     def _init_deck(self):
         for card_name, amount in config.DECK_AMOUNT.items():
@@ -33,10 +32,11 @@ class Player(object):
         pass
 
     def on_turn_start(self):
-        # hook
-
-        # clear mana
-        self.turn_mana = config.INIT_MANA
+        # draw a card
+        self.draw_card()
+        # untap all cards
+        for c in self.mana_pile:
+            c.tapped = False
 
     def draw_card(self):
         if len(self.hand) > config.HAND_SIZE:
@@ -46,25 +46,15 @@ class Player(object):
         self.hand.append(card)
         return card
 
-    def tap(self, index):
-        try:
-            card = self.mana_pile[index]
-        except IndexError:
-            raise IllegalCardSelection
-        if card.tapped: # already tapped
-            raise IllegalCardSelection
-        card.tapped = True
-        self.turn_mana += config.MANA_GAIN[card.name]
+    @property
+    def turn_mana(self):
+        # https://stackoverflow.com/a/2900105
+        # num of cards that are untapped
+        return sum(1 for c in self.mana_pile if not c.tapped)
 
-    def untap(self, index):
-        try:
-            card = self.mana_pile[index]
-        except IndexError:
-            raise IllegalCardSelection
-        if not card.tapped: # not tapped
-            raise IllegalCardSelection
-        card.tapped = False
-        self.turn_mana -= config.MANA_GAIN[card.name]
+    @property
+    def max_mana(self):
+        return len(self.mana_pile)
 
     def place_to_mana_pile(self, index):
         try:
@@ -79,8 +69,20 @@ class Player(object):
             card = self.hand[index]
         except IndexError:
             raise IllegalCardSelection
-        if self.turn_mana < config.MANA_COST[card.name]:
+
+        cost = config.MANA_COST[card.name]
+        if self.turn_mana < cost:
             raise IllegalPlayerActionError('Insufficient mana')
+        # take mana cost
+        # tap cards from left to right
+        tapped = 0
+        for c in self.mana_pile:
+            if not c.tapped:
+                c.tapped = True
+                tapped += 1
+            if tapped == cost:
+                break
+
+        # play the card
         self.hand.remove(card)
-        self.turn_mana -= config.MANA_COST[card.name]
         card.played(board, target)

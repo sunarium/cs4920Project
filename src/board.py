@@ -35,6 +35,9 @@ class Board(object):
             return PlayerColor.EMPTY
         return p.owner
 
+    def on_turn_change(self):
+        for p in self.pieces:
+            p.newly_placed = False
 
     def __str__(self):
         return ','.join([str(p) for p in self.pieces])
