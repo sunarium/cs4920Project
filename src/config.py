@@ -1,3 +1,7 @@
+from types import SimpleNamespace
+import pygame
+pygame.init()
+
 ######################
 # GAMEPLAY CONSTANTS #
 ######################
@@ -9,7 +13,7 @@ DECK_AMOUNT = {
     'knight': 9,
     'queen': 3
 }
-HAND_SIZE = 6
+HAND_SIZE = 99999
 # costs of deploying each pieces
 MANA_COST = {
     'pawn': 1,
@@ -27,8 +31,8 @@ MANA_PER_TURN = 0
 # mana gained for placing this piece on mana pile
 MANA_GAIN = {
     'pawn': 1,
-    'rook': 2,
-    'queen': 5
+    'rook': 1,
+    'queen': 1
 }
 
 # size of board
@@ -41,30 +45,138 @@ FREE_KING = False
 ######################
 # GRAPHICS CONSTANTS #
 ######################
-ASSET_PATH = '../assets'
-FRAME_RATE = 60
-SCREEN_RESOLUTION = 1200, 900
-MENU_FONT = 'comicsansms'
-TEXT_SIZE_XS = 15
-TEXT_SIZE_S = 25
-TEXT_SIZE_M = 50
-TEXT_SIZE_L = 75
-COLORS = {
-    "MAIN_MENU_BG": (218,165,32),       # goldenrod
-    "BUTTON_COL1": (0, 155, 0),         # green
-    "BUTTON_COL1_LIGHT": (0, 255, 0),   # light green
-    "BUTTON_COL2": (200, 200, 0),       # yellow
-    "BUTTON_COL2_LIGHT": (255,255,0),   # yellow light
-    "BUTTON_COL3": (200, 0, 0),         # red
-    "BUTTON_COL3_LIGHT": (255, 0, 0),   #light red
-    "BLACK": (0, 0, 0)
+frame_rate = 60
+screen_resolution = (1200, 900)
+screen_w, screen_h = screen_resolution
+
+ui_colors = SimpleNamespace()
+# (R,G,B)
+ui_colors.white = (255, 255, 255)
+ui_colors.black = (0, 0, 0)
+ui_colors.red = (200, 0, 0)
+ui_colors.light_red = (255, 0, 0)
+ui_colors.green = (0, 155, 0)
+ui_colors.light_green = (0, 255, 0)
+ui_colors.blue = (0, 0, 255)
+ui_colors.light_blue = (0, 0, 200)
+ui_colors.yellow = (200, 200, 0)
+ui_colors.light_yellow = (255, 255, 0)
+ui_colors.goldenrod = (218, 165, 32)
+
+ui_colors.seperator_line = (128,128,128)
+
+# text renderers
+# usage: config.fonts.xsmall.render(text, antialias, color) -> Surface
+ui_fonts = SimpleNamespace()
+ui_fonts.xs = pygame.font.SysFont("comicsansms", 15)
+ui_fonts.s  = pygame.font.SysFont("comicsansms", 25)
+ui_fonts.m  = pygame.font.SysFont("comicsansms", 50)
+ui_fonts.l  = pygame.font.SysFont("comicsansms", 75)
+
+# asset path
+assetsroot = 'assets/'
+window_icon = pygame.image.load(assetsroot + 'icon.png')
+game_background = pygame.image.load(assetsroot + 'UI_v0.5.png')
+tm_logo = 'tm.png'
+
+# other UI elements
+window_title = 'Chess: The Gathering'
+credits_font = ui_fonts.l
+credits_color = ui_colors.black
+credits_vertical_gap = 100 # px
+credits_initial_y = 400 # px
+credits_speed = 1 # px/frame
+
+# buttons
+buttons = {
+    'default': {
+        'text':'TEXT',
+        'left': 0,
+        'top': 0,
+        'width': 200,
+        'height': 100,
+        'font_size':'m',
+        'color': ui_colors.light_blue,
+        'active_color': ui_colors.blue,
+        'text_color': ui_colors.black,
+        'help_text': '',
+        'help_text_size': 's',
+        'help_text_color': ui_colors.black,
+        'help_text_offset': 100,  # px
+        'next_state': None
+    },
+    'start_local':{
+        'text': 'local',
+        'left': 100,
+        'top': 500,
+        'color': ui_colors.green,
+        'active_color': ui_colors.light_green,
+        'help_text': 'Start local game',
+        'next_state': 'local_game'
+    },
+    'show_controls':{
+        'text': 'controls',
+        'left': 70,
+        'top': 400,
+        'color': ui_colors.green,
+        'active_color': ui_colors.light_green,
+        'help_text': 'Display controls',
+        'next_state': 'controls'
+    },
+    'show_credits':{
+        'text': 'credits',
+        'left': 500,
+        'top': 500,
+        'color': ui_colors.red,
+        'active_color': ui_colors.light_red,
+        'help_text':'Display Credits',
+        'next_state': 'credits'
+    },
+    'back_to_main':{
+        'text': 'back',
+        'left': 900,
+        'top': 500,
+        'color': ui_colors.red,
+        'active_color': ui_colors.light_red,
+        'help_text': 'back to main',
+        'next_state': 'main_menu'
+    },
+    'back_to_main_ingame': {
+        'text': 'back',
+        'left': 1120,
+        'top': 0,
+        'width': 80,
+        'height': 30,
+        'color': ui_colors.red,
+        'active_color': ui_colors.light_red,
+        'help_text': '',
+        'font_size': 'xs',
+        'next_state': 'main_menu'
+    },
+    'quit': {
+        'text': 'quit',
+        'left': 900,
+        'top': 500,
+        'next_state': 'quit'
+    }
 }
-WINDOW_TITLE = 'Chess: The Gathering'
-ICON_PATH = '../assets/icon.png'
+
+# game interface
+# sizes
+board_size = (600, 600)
+piece_size = (75, 75)
+card_size = (300, 100)
+# positions
+board_pos = (100, 0)
+hand_start_pos = ()
+
+
 
 ############################
 # NETWORKED GAME CONSTANTS #
 ############################
 
 DEFAULT_PORT = 11235
-CONNECTION_TIMEOUT = 60 # needed?
+HANDSHAKE_TIMEOUT = 5
+CLIENT_REQUEST = b'ClientHello'
+SERVER_RESPONSE = b'ServerWavesback'
