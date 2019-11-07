@@ -103,7 +103,9 @@ buttons = {
         'help_text_size': 's',
         'help_text_color': ui_colors.black,
         'help_text_offset': 100,  # px
-        'next_state': None
+        'next_state': None,
+        'next_turn': None,
+        'next_phase': None
     },
     'start_local':{
         'text': 'local',
@@ -152,6 +154,30 @@ buttons = {
         'help_text': '',
         'font_size': 'xs',
         'next_state': 'main_menu'
+    },
+    'next_phase': {
+        'text': 'next_phase',
+        'left': 1020,
+        'top': 400,
+        'width': 80,
+        'height': 30,
+        'color': ui_colors.red,
+        'active_color': ui_colors.light_red,
+        'help_text': '',
+        'font_size': 'xs',
+        'next_phase': 'next'
+    },
+    'next_turn': {
+        'text': 'next_turn',
+        'left': 1020,
+        'top': 500,
+        'width': 80,
+        'height': 30,
+        'color': ui_colors.red,
+        'active_color': ui_colors.light_red,
+        'help_text': '',
+        'font_size': 'xs',
+        'next_turn': 'next'
     },
     'quit': {
         'text': 'quit',

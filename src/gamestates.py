@@ -89,7 +89,11 @@ class MainMenu(GameState):
 class LocalGame(GameState):
     def __init__(self):
         super().__init__()
-        self.buttons = [Button(self, config.buttons['back_to_main_ingame'])]
+        self.buttons = [
+            Button(self, config.buttons['back_to_main_ingame']),
+            Button(self, config.buttons['next_phase']),
+            Button(self, config.buttons['next_turn']),
+        ]
         self.engine = GameEngine(debug=True)
         # player interaction
         self.picked_piece = None
@@ -116,6 +120,8 @@ class LocalGame(GameState):
                     self.on_click_board(e.pos)
                 elif config.hand_draw_area.collidepoint(*e.pos):
                     self.on_click_hand()
+                for b in self.buttons:
+                    if b.activated: b.on_click()
             elif e.type == pygame.MOUSEMOTION and e.buttons[0]:
                 pass
                 # drag motion
@@ -129,6 +135,8 @@ class LocalGame(GameState):
             try:
                 self.engine.move_piece(self.picked_piece, piece_pos)
                 self.picked_piece = None
+                if self.engine.game_ended:
+                    self.set_next_state("main_menu")
             except IllegalPlayerActionError:
                 # todo we could play a sound here
                 pass

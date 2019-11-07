@@ -30,3 +30,7 @@ class Button:
     def on_click(self):
         if self.next_state:
             self.owner.set_next_state(self.next_state)
+        if self.next_phase:
+            self.owner.engine.phase_change()
+        if self.next_turn:
+            self.owner.engine._turn_switch()
