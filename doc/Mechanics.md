@@ -25,17 +25,17 @@ To kill the opponent’s King just as in chess
 - Each player is dealt 6 cards
 
 ### Phases of a turn
-- Recouperation phase (temporary name)
-    - Untapping resources (does not have to physically turn when designing graphics, but need some indication of how much resource to use
+- First phase (temporary name)
     - Draw a card
-- Strategy Phase
+    - this happens automatically
+- Second Phase(Main Phase)
     - Player can place 1 card from their hand into their mana pile
     - Player can play cards from their hand by paying their mana cost
         - For the moment, all cards will be pieces
         - An extension would be to add action cards
     - Pieces cannot move during the turn they are played
-- Action phase
+- Third phase
         - Player can select a piece and move them as per chess
-- Fall back phase
+- Second main phase
     - Optional phase where player can play more cards if they have resources left
 - End phase

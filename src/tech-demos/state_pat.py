@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import pygame
 
 class State(ABC):
     def __init__(self, name):
@@ -29,8 +30,8 @@ class RunningState(State):
 
 class MainmenuState(State):
     def render(self, screen):
-        # render menu buttons and shit
-        pass
+        for button in self.buttons:
+            button.draw(screen)
 
     def handle_event(self):
         if user_clicked_networkgame:

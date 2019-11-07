@@ -9,7 +9,7 @@ DECK_AMOUNT = {
     'knight': 9,
     'queen': 3
 }
-HAND_SIZE = 6
+HAND_SIZE = 99999
 # costs of deploying each pieces
 MANA_COST = {
     'pawn': 1,
@@ -27,8 +27,8 @@ MANA_PER_TURN = 0
 # mana gained for placing this piece on mana pile
 MANA_GAIN = {
     'pawn': 1,
-    'rook': 2,
-    'queen': 5
+    'rook': 1,
+    'queen': 1
 }
 
 # size of board
@@ -55,6 +55,6 @@ SCREEN_RESOLUTION = 1200, 900
 ############################
 
 DEFAULT_PORT = 11235
-HANDSHAKE_TIMEOUT = 10
+HANDSHAKE_TIMEOUT = 5
 CLIENT_REQUEST = b'ClientHello'
 SERVER_RESPONSE = b'ServerWavesback'

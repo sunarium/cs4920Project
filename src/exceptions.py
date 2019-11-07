@@ -1,14 +1,14 @@
 class IllegalPiecePosError(Exception):
     pass
 
-class IllegalMoveError(Exception):
-    pass
 
 class IllegalCardSelection(Exception):
     pass
 
-class IllegalCardNameError(Exception):
-    pass
-
 class IllegalPlayerActionError(Exception):
     pass
+
+class NetworkError(Exception):
+    def __init__(self, msg=''):
+        super().__init__()
+        self.msg = msg

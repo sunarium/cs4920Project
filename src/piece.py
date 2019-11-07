@@ -79,7 +79,6 @@ class Piece():
         ],
         'queen': (3, 0),
         'king': (4, 0)
-
     }
 
     def __init__(self, name:str, pos:Union[Vector2, Tuple], owner:PlayerColor, board:Board=None):
@@ -92,6 +91,7 @@ class Piece():
         if board:
             self.board = board
             board.add_piece(self)
+        self.newly_placed = True
 
     def get_legal_moves(self, board:Board=None) -> List[Vector2]:
         if not board:
@@ -124,9 +124,3 @@ class Piece():
 
     def __str__(self):
         return f'Piece(name={self.name}, pos={self.pos})'
-
-if __name__ == '__main__':
-    b = Board()
-    p = Piece('pawn', (1,3), 1, b)
-    p1 = Piece('rook', (1,1), 1, b)
-    p2 = Piece('queen', (0,3), 1, b)
