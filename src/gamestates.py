@@ -184,12 +184,17 @@ class LocalGame(GameState):
         # draw deck size
         text = "{}/50".format(self.engine.get_curr_deck_size())
         screen.blit(
-            config.ui_fonts.l.render(text, True, config.ui_colors.black),
+            config.ui_fonts.s.render(text, True, config.ui_colors.black),
             config.deck_text_pos
         )
 
         # todo draw mana bar
-
+        startPos = V2(config.mana_start_pos)
+        text = "{}/{}".format(self.engine.current_player.turn_mana, self.engine.current_player.mana_pile)
+        screen.blit(
+            config.ui_fonts.s.render(text, True, config.ui_colors.black),
+            config.mana_text_pos
+        )
         # todo draw phase indicator
 
 

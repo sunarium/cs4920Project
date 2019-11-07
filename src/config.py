@@ -169,10 +169,12 @@ card_size = (150, 200)
 # positions
 board_pos = (150, 0)
 hand_start_pos = (20, 680)
-deck_text_pos = (1000, 700)
-
-# rects for clipping and collision detection
+deck_text_pos = (1010, 725)
+mana_start_pos = (20, 610)
+mana_text_pos = (20, 610)
+# hand drawing shenanigans
 hand_draw_area = pygame.Rect((0, 661), (900, 239))
+
 
 # margin size
 hand_margin = 20
