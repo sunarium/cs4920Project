@@ -52,7 +52,14 @@ class GameEngine(object):
         self.debug = debug
 
         # initialize the game
+        for i in range(0,10):
+            self.current_player.draw_card()
+            self.place_to_mana_pile(0)
         self.current_player.draw_card()
+        self.current_player.draw_card()
+
+
+
 
     def debug_dump(self):
         if not self.debug:
@@ -87,6 +94,9 @@ class GameEngine(object):
     # functions that alters game state; called by graphics engine
     # todo do we do the phase check in game engine or graphics engine?
     # for now we dont have phase checking.
+
+    def get_board_state(self):
+        return self.board.pieces
 
     # recouperation phase
     # player tap a card in mana pile for mana

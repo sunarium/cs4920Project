@@ -484,10 +484,15 @@ def chess_tile(text, x, y, width, height, inactive_colour, active_colour, action
     global gameFinish
     global enemyButtonArray
     global gameStarted
+    global cardSelected
+    global cardIndex
 
     if x + width >= cur[0] >= x and y + height >= cur[1] >= y:
         pygame.draw.rect(gameDisplay, active_colour, (x, y, width, height))
-        #if click[0] == 1:
+        if click[0] == 1 and action != None:
+            if cardSelected:
+                e.play_card(cardIndex, pygame.math.Vector2(int(text[0]),int(text[1])))
+
 
 
 
@@ -554,8 +559,8 @@ def display_new():
                 if (i % 2) == 0:
                     if (j % 2) != 0:
                         colour = black
-                chess_tile("{}{}".format(chr(65+j), 1+i), 150 + (67*j), 500 - (67*i), 67, 67, colour, colour,
-                           action="{}{}".format(chr(65+j), 1+i))
+                chess_tile("{}{}".format(0+j, 0+i), 150 + (67*j), 31 + (67*i), 67, 67, colour, colour,
+                           action="{}{}".format(0+j, 0+i))
 
         pygame.draw.line(gameDisplay, black, (150, 31), (150, 567), 1)
         pygame.draw.line(gameDisplay, black, (150, 31), (686, 31), 1)
