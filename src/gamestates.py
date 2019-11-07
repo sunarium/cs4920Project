@@ -129,7 +129,7 @@ class LocalGame(GameState):
         # draw deck size
         text = "{}/50".format(self.engine.get_curr_deck_size())
         screen.blit(
-            config.ui_fonts.l.render(text, True, config.ui_colors.black),
+            config.ui_fonts.s.render(text, True, config.ui_colors.black),
             config.deck_text_pos
         )
 

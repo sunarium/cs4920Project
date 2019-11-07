@@ -169,7 +169,7 @@ card_size = (150, 200)
 # positions
 board_pos = (150, 0)
 hand_start_pos = (20, 680)
-deck_text_pos = (1000, 700)
+deck_text_pos = (1010, 725)
 # hand drawing shenanigans
 hand_draw_area = pygame.Rect((0, 661), (900, 239))
 
