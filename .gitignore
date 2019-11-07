@@ -4,4 +4,3 @@ venv/
 venv_pycharm/
 src/*.pyc
 .vscode/
-assets/
