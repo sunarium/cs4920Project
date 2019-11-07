@@ -1,6 +1,7 @@
 from src import config
 from .button import Button
 from src.engine import GameEngine, PlayerColor
+from src.exceptions import *
 
 import pygame
 from pygame import Vector2 as V2
@@ -90,19 +91,56 @@ class LocalGame(GameState):
         super().__init__()
         self.buttons = [Button(self, config.buttons['back_to_main_ingame'])]
         self.engine = GameEngine(debug=True)
+        # player interaction
+        self.picked_piece = None
+        self.hand_xoffset = 0
+        self.board_rect = pygame.Rect(config.board_pos, config.board_size)
+        # visual clues
+        self.legal_positions = None
 
-        print()
+        # debug
+        self.engine.phase = 1
+        self.engine.board.on_turn_change()
+
+
 
     def handle_event(self, events:List[pygame.event.Event]):
         # todo: if game over, stop handle all mouse interaction except quit button
-
         # handle mouse over
         for b in self.buttons:
             b.activated = b.rect.collidepoint(*pygame.mouse.get_pos())
         # todo handle mouse click on card/piece/board/buttons
+        for e in events:
+            if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
+                if self.board_rect.collidepoint(*e.pos):
+                    self.on_click_board(e.pos)
+                elif config.hand_draw_area.collidepoint(*e.pos):
+                    self.on_click_hand()
+            elif e.type == pygame.MOUSEMOTION and e.buttons[0]:
+                pass
+                # drag motion
+        # handle hand drag?
 
-        # handle drag?
+    def on_click_board(self, mouse_pos):
+        piece_pos = (V2(mouse_pos) - config.board_pos) // config.piece_size[0]
+        if not self.picked_piece:
+            self.picked_piece = self.engine.grab_piece(piece_pos)
+        else:
+            try:
+                self.engine.move_piece(self.picked_piece, piece_pos)
+                self.picked_piece = None
+            except IllegalPlayerActionError:
+                # todo we could play a sound here
+                pass
+
+
+    def on_click_hand(self):
         pass
+
+    def on_click_mana_pile(self):
+        pass
+
+
 
     def render(self, screen:pygame.Surface):
         self.render_ui_sprite(screen)
@@ -111,10 +149,27 @@ class LocalGame(GameState):
 
         # draw pieces
         for p in self.engine.board.pieces:
+            if p == self.picked_piece:
+                location = pygame.Rect((0,0), config.piece_size)
+                location.center = pygame.mouse.get_pos()
+            else:
+                location = (p.pos.elementwise() * V2(config.piece_size)) + config.board_pos
             assetfile = p.asset_name()
             surf = pygame.image.load(config.assetsroot+assetfile)
-            location = (p.pos.elementwise()  * V2(config.piece_size)) + config.board_pos
             screen.blit(surf, location)
+
+        # draw picked piece
+
+
+        # draw visual clues
+        # todo: not tested
+        if self.legal_positions is not None:
+            for legal_pos in self.legal_positions:
+                rect = pygame.Rect(
+                    V2(config.board_pos) + (legal_pos.elementwise() * config.piece_size),
+                    config.piece_size
+                )
+                pygame.draw.rect(screen, config.ui_colors.legal_pos, rect)
 
         # draw hand
         location = V2(config.hand_start_pos)

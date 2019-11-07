@@ -12,9 +12,9 @@ from .playercolor import PlayerColor
 from . import config
 
 class GamePhase(IntEnum):
-    MAIN = auto()
-    MOVEMENT = auto()
-    SECOND_MAIN = auto()
+    MAIN = 0
+    MOVEMENT = 1
+    SECOND_MAIN = 2
 
 
 class NetworkStatus(IntEnum):
@@ -137,29 +137,33 @@ class GameEngine(object):
     # raises error if
     #   - no owned piece at old_pos
     #   - new pos is invalid
-    def move_piece(self, old_pos: Union[Vector2, Tuple[int, int]], new_pos: Union[Vector2, Tuple[int, int]]):
-        if not self.debug and self.current_player.has_moved_piece:
-            raise IllegalPlayerActionError("already moved a piece before")
-
-        if not self.phase == GamePhase.MOVEMENT:
-            raise IllegalPlayerActionError("you can only move pieces in movement phase")
-
-        piece = self.board.get_piece(old_pos)
+    def move_piece(self, piece: Piece, new_pos: Union[Vector2, Tuple[int, int]]):
         # check movement legality
-        if not piece or new_pos not in piece.get_legal_moves(self.board) or piece.newly_placed:
+        if new_pos not in piece.get_legal_moves(self.board) or piece.newly_placed:
             raise IllegalPlayerActionError("cant move there")
-        piece.move_to(new_pos)
-        self.current_player.has_moved_piece = True
 
         # enemy piece capturing
         captured_piece = self.board.get_piece(new_pos)
         if captured_piece:  # captured
             self.board.remove_at(new_pos)
 
+        piece.move_to(new_pos)
+        self.has_moved_piece = True
+
         # if king is captured, player made this move wins
-        if captured_piece.name == 'king':
+        if captured_piece and captured_piece.name == 'king':
             self.winner = self.current_player
             self.game_ended = True
+
+    # if current player can move piece at pos, return piece
+    # otherwise return None
+    def grab_piece(self, pos):
+        if not self.debug and (self.has_moved_piece or self.phase != GamePhase.MOVEMENT):
+            return None
+        piece = self.board.get_piece(pos)
+        if piece and piece.owner == self.current_player.color and not piece.newly_placed:
+            return piece
+
 
     def _turn_switch(self):
         self.board.on_turn_change()

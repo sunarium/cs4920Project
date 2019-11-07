@@ -63,7 +63,7 @@ ui_colors.yellow = (200, 200, 0)
 ui_colors.light_yellow = (255, 255, 0)
 ui_colors.goldenrod = (218, 165, 32)
 
-ui_colors.seperator_line = (128,128,128)
+ui_colors.legal_pos = (0, 128, 0, 128) # transparent green
 
 # text renderers
 # usage: config.fonts.xsmall.render(text, antialias, color) -> Surface
