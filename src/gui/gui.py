@@ -69,7 +69,6 @@ highscoreScore = []
 currentNumHighscore = 0
 
 e = GameEngine(debug=True)
-e.draw_card()
 
 def text_objects(text, colour, size):
     if size == "small":
