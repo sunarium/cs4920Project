@@ -1,5 +1,6 @@
 from pygame import Vector2
 from typing import Tuple, Union
+from src.piece import Piece
 
 from .exceptions import *
 from .playercolor import PlayerColor
@@ -7,7 +8,11 @@ from . import config
 
 class Board(object):
     def __init__(self):
-        self.pieces = [].append()
+        self.pieces = []
+        whiteK = Piece("king", Vector2(4, 0), -1, self)
+        blackK = Piece("king", Vector2(4, 7), 1, self)
+        self.pieces.append(whiteK)
+        self.pieces.append(blackK)
         # todo:initialize king?
 
     def get_piece(self, pos:Union[Vector2, Tuple[int, int]]):
