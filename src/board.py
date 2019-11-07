@@ -7,7 +7,7 @@ from . import config
 
 class Board(object):
     def __init__(self):
-        self.pieces = []
+        self.pieces = [].append()
         # todo:initialize king?
 
     def get_piece(self, pos:Union[Vector2, Tuple[int, int]]):

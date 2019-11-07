@@ -13,6 +13,9 @@ class Player(object):
         self.mana_pile:List[Card] = []
         self._init_deck()
 
+        for i in range(0,6):
+            self.draw_card()
+
     def debug_dump(self):
         print(f'''
         this is player {self.color}
