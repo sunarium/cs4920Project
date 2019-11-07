@@ -69,6 +69,8 @@ highscoreScore = []
 currentNumHighscore = 0
 
 e = GameEngine(debug=True)
+cardSelected = False
+cardIndex = 0
 
 def text_objects(text, colour, size):
     if size == "small":
@@ -485,27 +487,31 @@ def chess_tile(text, x, y, width, height, inactive_colour, active_colour, action
 
     if x + width >= cur[0] >= x and y + height >= cur[1] >= y:
         pygame.draw.rect(gameDisplay, active_colour, (x, y, width, height))
-        #if click[0] == 1 and action != None:
+        #if click[0] == 1:
 
-        button_helper(text, x, y, width, height, action)
 
 
     else:
         pygame.draw.rect(gameDisplay, inactive_colour, (x, y, width, height))
 
-def card_button(card, x, y, width, height, inactive_colour, active_colour, action=None):
+def card_button(card,index, x, y, width, height, inactive_colour, active_colour, action=None):
     cur = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
     global gameFinish
     global enemyButtonArray
     global gameStarted
+    global cardSelected
+    global cardIndex
 
     if x + width >= cur[0] >= x and y + height >= cur[1] >= y:
         pygame.draw.rect(gameDisplay, active_colour, (x, y, width, height))
-        # if click[0] == 1 and action != None:
-
-        #button_helper(text, x, y, width, height, action)
-
+        if click[0] == 1:
+            if cardSelected:
+                if index != cardIndex:
+                    cardIndex = index
+            else:
+                cardSelected = True;
+                cardIndex = index
 
     else:
         pygame.draw.rect(gameDisplay, inactive_colour, (x, y, width, height))
@@ -564,7 +570,7 @@ def display_new():
 
         card = e.get_curr_hand()
         firstCard = card[0]
-        card_button(firstCard, 100, 650, 150, 200,red,red)
+        card_button(firstCard,0, 100, 650, 150, 200,red,red)
 
         pygame.display.update()
         clock.tick(10)
