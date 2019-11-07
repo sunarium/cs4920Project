@@ -5,6 +5,7 @@ import socket
 import threading
 
 from .board import Board
+from .piece import Piece
 from .exceptions import *
 from .player import Player
 from .playercolor import PlayerColor
@@ -51,6 +52,8 @@ class GameEngine(object):
 
         # initialize the game
         self.current_player.on_turn_start()
+        Piece("king", Vector2(4, 0), -1, self.board)
+        Piece("king", Vector2(4, 7), 1, self.board)
 
     def debug_dump(self):
         if not self.debug:
