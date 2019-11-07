@@ -92,6 +92,7 @@ class Piece():
         if board:
             self.board = board
             board.add_piece(self)
+        self.newly_placed = True
 
     def get_legal_moves(self, board=None) -> List[Vector2]:
         if not board:
