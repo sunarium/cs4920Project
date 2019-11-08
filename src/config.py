@@ -103,7 +103,9 @@ buttons = {
         'help_text_size': 's',
         'help_text_color': ui_colors.black,
         'help_text_offset': 100,  # px
-        'next_state': None
+        'next_state': None,
+        'next_turn': None,
+        'next_phase': None
     },
     'start_local':{
         'text': 'local',
@@ -153,6 +155,30 @@ buttons = {
         'font_size': 'xs',
         'next_state': 'main_menu'
     },
+    'next_phase': {
+        'text': 'next_phase',
+        'left': 1020,
+        'top': 400,
+        'width': 80,
+        'height': 30,
+        'color': ui_colors.red,
+        'active_color': ui_colors.light_red,
+        'help_text': '',
+        'font_size': 'xs',
+        'next_phase': 'next'
+    },
+    'next_turn': {
+        'text': 'next_turn',
+        'left': 1020,
+        'top': 500,
+        'width': 80,
+        'height': 30,
+        'color': ui_colors.red,
+        'active_color': ui_colors.light_red,
+        'help_text': '',
+        'font_size': 'xs',
+        'next_turn': 'next'
+    },
     'quit': {
         'text': 'quit',
         'left': 900,
@@ -170,7 +196,7 @@ card_size = (150, 200)
 board_pos = (150, 0)
 hand_start_pos = (20, 680)
 deck_text_pos = (1010, 725)
-mana_start_pos = (20, 610)
+mana_start_pos = (70, 605)
 mana_text_pos = (20, 610)
 # hand drawing shenanigans
 hand_draw_area = pygame.Rect((0, 661), (900, 239))
