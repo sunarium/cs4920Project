@@ -155,11 +155,23 @@ class LocalGame(GameState):
         for b in self.buttons:
             b.render(screen)
 
+        # draw visual clues
+        # todo: currently pieces completely override the green
+        if self.picked_piece is not None:
+            if self.legal_positions is not None:
+                for legal_pos in self.legal_positions:
+                    rect = pygame.Rect(
+                        V2(config.board_pos) + (legal_pos.elementwise() * config.piece_size),
+                        config.piece_size
+                    )
+                    pygame.draw.rect(screen, config.ui_colors.legal_pos, rect)
+
         # draw pieces
         for p in self.engine.board.pieces:
             if p == self.picked_piece:
                 location = pygame.Rect((0,0), config.piece_size)
                 location.center = pygame.mouse.get_pos()
+                self.legal_positions = p.get_legal_moves()
             else:
                 location = (p.pos.elementwise() * V2(config.piece_size)) + config.board_pos
             assetfile = p.asset_name()
@@ -169,15 +181,7 @@ class LocalGame(GameState):
         # draw picked piece
 
 
-        # draw visual clues
-        # todo: not tested
-        if self.legal_positions is not None:
-            for legal_pos in self.legal_positions:
-                rect = pygame.Rect(
-                    V2(config.board_pos) + (legal_pos.elementwise() * config.piece_size),
-                    config.piece_size
-                )
-                pygame.draw.rect(screen, config.ui_colors.legal_pos, rect)
+
 
         # draw hand
         location = V2(config.hand_start_pos)
@@ -196,7 +200,7 @@ class LocalGame(GameState):
             config.deck_text_pos
         )
 
-        # todo draw mana bar
+        #draw mana bar
         position = V2(config.mana_start_pos)
         currMana = self.engine.current_player.turn_mana
         maxMana = self.engine.current_player.max_mana
