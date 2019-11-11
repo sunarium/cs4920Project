@@ -172,7 +172,7 @@ class GameEngine(object):
         self.has_moved_piece = False
         self.current_player, self.waiting_player = self.waiting_player, self.current_player
         self.current_player.on_turn_start()
-        self.newly_drawn = self.current_player.draw_card()
+        # self.newly_drawn = self.current_player.draw_card()
 
     # called when player end this phase
     def phase_change(self):

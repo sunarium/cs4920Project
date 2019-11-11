@@ -219,6 +219,11 @@ class LocalGame(GameState):
             config.mana_text_pos
         )
         # todo draw phase indicator
+        text = 'Player %d turn' % self.engine.current_player.color
+        screen.blit(
+            config.turn_indicator_font.render(text, True, config.ui_colors.black),
+            config.turn_indicator_pos
+        )
 
 
     # render sprites that doesnt need to move
