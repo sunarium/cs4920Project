@@ -87,6 +87,19 @@ credits_vertical_gap = 100 # px
 credits_initial_y = 400 # px
 credits_speed = 1 # px/frame
 
+connect = SimpleNamespace()
+connect.prompt_text = 'Please enter server\'s ip address :'
+connect.prompt_font = ui_fonts.m
+connect.prompt_color = ui_colors.black
+connect.prompt_center = (600, 200)
+connect.input_font = ui_fonts.m
+connect.input_color = ui_colors.black
+connect.input_center = (600, 300)
+connect.status_font = ui_fonts.xs
+connect.status_color = ui_colors.red
+connect.status_center = (600, 350)
+connect.delete_frame_interval = 10 # if user held down backspace, pop one char every X frame
+
 # buttons
 buttons = {
     'default': {
@@ -104,8 +117,6 @@ buttons = {
         'help_text_color': ui_colors.black,
         'help_text_offset': 100,  # px
         'next_state': None,
-        'next_turn': None,
-        'next_phase': None
     },
     'start_local':{
         'text': 'local',
@@ -115,6 +126,24 @@ buttons = {
         'active_color': ui_colors.light_green,
         'help_text': 'Start local game',
         'next_state': 'local_game'
+    },
+    'join_online': {
+        'text': 'join game',
+        'left': 100,
+        'top': 200,
+        'color': ui_colors.green,
+        'active_color': ui_colors.light_green,
+        'help_text': 'Join online game',
+        'next_state': 'join_game'
+    },
+    'host_online': {
+        'text': 'host game',
+        'left': 500,
+        'top': 200,
+        'color': ui_colors.blue,
+        'active_color': ui_colors.light_blue,
+        'help_text': 'Host online game',
+        'next_state': 'host_game'
     },
     'show_controls':{
         'text': 'controls',
@@ -143,6 +172,15 @@ buttons = {
         'help_text': 'back to main',
         'next_state': 'main_menu'
     },
+    'connect': {
+        'text': 'connect',
+        'left': 100,
+        'top': 500,
+        'color': ui_colors.red,
+        'active_color': ui_colors.light_red,
+        'help_text': None,
+        'next_state': None
+    },
     'back_to_main_ingame': {
         'text': 'back',
         'left': 1120,
@@ -165,7 +203,6 @@ buttons = {
         'active_color': ui_colors.light_red,
         'help_text': '',
         'font_size': 'xs',
-        'next_phase': 'next'
     },
     'next_turn': {
         'text': 'next_turn',
@@ -177,7 +214,6 @@ buttons = {
         'active_color': ui_colors.light_red,
         'help_text': '',
         'font_size': 'xs',
-        'next_turn': 'next'
     },
     'quit': {
         'text': 'quit',
@@ -201,10 +237,10 @@ mana_text_pos = (20, 610)
 turn_indicator_pos = (955, 175)
 turn_indicator_font = ui_fonts.s
 # hand drawing shenanigans
-hand_draw_area = pygame.Rect((0, 661), (900, 239))
+hand_draw_area = pygame.Rect((0, 661), (901, 240))
 
 
-# margin size
+# margin size between cards
 hand_margin = 20
 
 

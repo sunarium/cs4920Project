@@ -2,7 +2,7 @@ from src import config
 import pygame
 
 class Button:
-    def __init__(self, owner, spec:dict):
+    def __init__(self, owner, spec:dict, on_click_callback=None):
         for k, v in config.buttons['default'].items():
             self.__setattr__(k, v)
         for k, v in spec.items():
@@ -11,6 +11,7 @@ class Button:
         self.activated = False
         self.rect = pygame.Rect(self.left, self.top, self.width, self.height)
         self.text_renderer = config.ui_fonts.__getattribute__(self.font_size)
+        self.on_click_callback = on_click_callback
 
     def render(self, screen:pygame.Surface):
         color = self.active_color if self.activated else self.color
@@ -30,7 +31,5 @@ class Button:
     def on_click(self):
         if self.next_state:
             self.owner.set_next_state(self.next_state)
-        if self.next_phase:
-            self.owner.engine.phase_change()
-        if self.next_turn:
-            self.owner.engine._turn_switch()
+        if self.on_click_callback:
+            self.on_click_callback()

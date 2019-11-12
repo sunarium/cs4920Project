@@ -1,13 +1,12 @@
 from src import config
 from .button import Button
-from src.engine import GameEngine, PlayerColor
+from src.engine import GameEngine, NetworkStatus, NetworkGameEngine, PlayerColor
 from src.exceptions import *
 
 import pygame
 from pygame import Vector2 as V2
 from abc import ABC, abstractmethod
 from typing import List, Tuple
-
 
 class GameState(ABC):
     def __init__(self):
@@ -69,7 +68,8 @@ class MainMenu(GameState):
         self.buttons = [
             Button(self, config.buttons['quit']),
             Button(self, config.buttons['show_credits']),
-            Button(self, config.buttons['start_local'])
+            Button(self, config.buttons['start_local']),
+            Button(self, config.buttons['join_online'])
         ]
 
     def render(self, screen:pygame.Surface):
@@ -87,14 +87,17 @@ class MainMenu(GameState):
                     if b.activated: b.on_click()
 
 class LocalGame(GameState):
-    def __init__(self):
+    def __init__(self, engine=None):
         super().__init__()
+        if engine: # network engine
+            self.engine = engine
+        else: # local game
+            self.engine = GameEngine(debug=True)
         self.buttons = [
             Button(self, config.buttons['back_to_main_ingame']),
-            Button(self, config.buttons['next_phase']),
-            Button(self, config.buttons['next_turn']),
+            Button(self, config.buttons['next_phase'], on_click_callback=self.engine.phase_change),
+            Button(self, config.buttons['next_turn'], on_click_callback=self.engine.turn_switch),
         ]
-        self.engine = GameEngine(debug=True)
         # player interaction
         self.picked_piece = None
         self.hand_xoffset = 0
@@ -246,12 +249,86 @@ class LocalGame(GameState):
         mouse_pos /= config.piece_size
         return mouse_pos
 
+class JoinGame(GameState):
+    def __init__(self):
+        super().__init__()
+        self.network_engine = NetworkGameEngine(debug=True)
+        self.buttons = [
+            Button(self, config.buttons['back_to_main']),
+            Button(self, config.buttons['connect'], on_click_callback=self.connect_to)
+        ]
+        self.delete_frame_counter = config.connect.delete_frame_interval
+        self.ip_string = ""
+        self.status_text = ""
 
+
+    def connect_to(self):
+        self.status_text = ''
+        if self.ip_string != '':
+            self.network_engine.connect_to(self.ip_string)
+
+
+    def render(self, screen:pygame.Surface):
+        screen.fill(config.ui_colors.goldenrod)
+        for b in self.buttons:
+            b.render(screen)
+
+        # render prompt text
+        prompt = config.connect.prompt_font.render(config.connect.prompt_text, True, config.connect.prompt_color)
+        prompt_rect = prompt.get_rect()
+        prompt_rect.center = config.connect.prompt_center
+        screen.blit(prompt, prompt_rect)
+
+        # render input field
+        input_ip = config.connect.input_font.render(self.ip_string, True, config.connect.input_color)
+        input_rect = input_ip.get_rect()
+        input_rect.center = config.connect.input_center
+        screen.blit(input_ip, input_rect)
+
+        # render error message if any
+        if self.status_text != '':
+            status = config.connect.status_font.render(self.status_text, True, config.connect.status_color)
+            status_rect = status.get_rect()
+            status_rect.center = config.connect.status_center
+            screen.blit(status, status_rect)
+
+
+    def handle_event(self, events:List[pygame.event.Event]):
+        # user events
+        for b in self.buttons:
+            b.activated = b.rect.collidepoint(*pygame.mouse.get_pos())
+        if pygame.key.get_pressed()[pygame.K_BACKSPACE]:
+            self.delete_frame_counter -= 1
+            if self.delete_frame_counter == 0:
+                self.ip_string = self.ip_string[:-1]
+                self.delete_frame_counter = config.connect.delete_frame_interval
+        for e in events:
+            if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
+                # left click event
+                for b in self.buttons:
+                    if b.activated: b.on_click()
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_BACKSPACE:
+                    self.ip_string = self.ip_string[:-1]
+                elif e.unicode != '' and e.unicode.isprintable():
+                    self.ip_string += e.unicode
+
+        # network events
+        self.status_text = str(self.network_engine.network_status)
+        if self.network_engine.network_status == NetworkStatus.ERROR:
+            self.status_text += self.network_engine.error_message
+
+
+
+class HostGame(GameState):
+    pass
 
 
 state_list = {
     'main_menu': MainMenu,
     'quit': Quit,
     'credits': Credits,
-    'local_game': LocalGame
+    'local_game': LocalGame,
+    'join_game': JoinGame,
+    'host_game': HostGame
 }

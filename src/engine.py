@@ -19,12 +19,23 @@ class GamePhase(IntEnum):
 
 class NetworkStatus(IntEnum):
     INITIALIZED = auto()
-    VALIDATING = auto()
     AWAITING_CONNECTION = auto()
     CONNECTING_TO_SERVER = auto()
     CONNECTED = auto()
     CONNECTION_CLOSED = auto()
     ERROR = auto()
+
+    def __str__(self):
+        if self.value == self.AWAITING_CONNECTION:
+            return 'Awaiting connection...'
+        elif self.value == self.CONNECTING_TO_SERVER:
+            return 'Connecting...'
+        elif self.value == self.CONNECTED:
+            return 'Connected.'
+        elif self.value == self.ERROR:
+            return 'Error: '
+        else:
+            return ''
 
 
 class GameEngine(object):
@@ -164,8 +175,7 @@ class GameEngine(object):
         if piece and piece.owner == self.current_player.color and not piece.newly_placed:
             return piece
 
-
-    def _turn_switch(self):
+    def turn_switch(self):
         self.board.on_turn_change()
         self.current_player.on_turn_end()
         self.has_placed_to_mana = False
@@ -178,17 +188,14 @@ class GameEngine(object):
     def phase_change(self):
         if self.phase == GamePhase.SECOND_MAIN:
             self.phase = GamePhase.MAIN
-            self._turn_switch()
+            self.turn_switch()
         else:
             self.phase += 1
 
 
-class LocalGameEngine(GameEngine):
-    pass
-
-
-class NetworkGameEngine:
+class NetworkGameEngine(GameEngine):
     def __init__(self, debug=False):
+        super().__init__(debug=debug)
         self.engine = GameEngine(debug)
         self.error_message = ''
         self.network_status = NetworkStatus.INITIALIZED
@@ -200,27 +207,28 @@ class NetworkGameEngine:
             try:
                 server_ip = socket.gethostbyname(addr)
             except socket.gaierror:
-                raise NetworkError(msg='Invalid Hostname or ip')
-            self.network_status = NetworkStatus.VALIDATING
+                raise NetworkError('Invalid Hostname or ip')
             self.socket.settimeout(config.HANDSHAKE_TIMEOUT)
             try:
                 self.socket.connect((server_ip, config.DEFAULT_PORT))
                 self.socket.send(config.CLIENT_REQUEST)
                 msg = self.socket.recv(1024)
             except socket.timeout:
-                raise NetworkError(msg='handshake timeout')
+                raise NetworkError('handshake timeout')
             except ConnectionRefusedError:
-                raise NetworkError(msg='connection refused')
+                raise NetworkError('connection refused')
+            except OSError as e:
+                raise NetworkError(str(e))
 
             if msg.strip() != config.SERVER_RESPONSE:
-                raise NetworkError(msg='server response do not match')
+                raise NetworkError('server response do not match')
             self.network_status = NetworkStatus.CONNECTED
             self.socket.settimeout(0)  # disable timeout
             self.socket.setblocking(False)
             print('client: server connected')
         except NetworkError as e:
             self.network_status = NetworkStatus.ERROR
-            self.error_message = e.msg
+            self.error_message = e.args[0]
 
     def _await_handshake(self):
         self.socket.bind(('', config.DEFAULT_PORT))
