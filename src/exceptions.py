@@ -12,3 +12,6 @@ class IllegalCardNameError(Exception):
 
 class IllegalPlayerActionError(Exception):
     pass
+
+class NetworkError(Exception):
+    pass
