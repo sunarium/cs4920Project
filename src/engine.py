@@ -3,6 +3,7 @@ from pygame import Vector2
 from enum import IntEnum, auto
 import socket
 import threading
+import queue
 
 from .board import Board
 from .piece import Piece
@@ -68,6 +69,13 @@ class GameEngine(object):
 
         # debug flag
         self.debug = debug
+        if debug:
+            self.phase = 1
+            self.board.on_turn_change()
+            self.board.pieces.append(Piece('rook',  (0, 0), PlayerColor.WHITE))
+            self.board.pieces.append(Piece('knight', (1, 0), PlayerColor.WHITE))
+            self.board.pieces.append(Piece('bishop', (2, 0), PlayerColor.WHITE))
+            print(self.board.pieces)
 
         # initialize the game
         self.current_player.on_turn_start()

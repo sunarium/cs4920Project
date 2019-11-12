@@ -82,7 +82,7 @@ class Piece():
 
     }
 
-    def __init__(self, name:str, pos:Union[Vector2, Tuple], owner:PlayerColor, board=None):
+    def __init__(self, name: str, pos: Tuple[int, int], owner: PlayerColor, board = None) -> object:
         self.pos:Vector2 = Vector2(pos)
         self.owner = owner
         self.name = name

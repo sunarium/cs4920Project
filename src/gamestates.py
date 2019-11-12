@@ -92,12 +92,9 @@ class MainMenu(GameState):
         self.handle_button(events)
 
 class LocalGame(GameState):
-    def __init__(self, engine=None):
+    def __init__(self):
         super().__init__()
-        if engine: # network engine
-            self.engine = engine
-        else: # local game
-            self.engine = GameEngine(debug=True)
+        self.engine = GameEngine(debug=True)
         self.buttons = [
             Button(self, config.buttons['back_to_main_ingame']),
             Button(self, config.buttons['next_phase'], on_click_callback=self.engine.phase_change),
@@ -107,14 +104,14 @@ class LocalGame(GameState):
         self.picked_piece = None
         self.hand_xoffset = 0
         self.board_rect = pygame.Rect(config.board_pos, config.board_size)
+        self.drag = False
+        self.handDisplayOffset = 0
         # visual clues
         self.legal_positions = None
 
         # debug
-        self.engine.phase = 1
-        self.engine.board.on_turn_change()
-        self.drag = False
-        self.handDisplayOffset = 0
+        # i moved these to engine.__init__() --Henry
+
 
 
 
@@ -169,6 +166,8 @@ class LocalGame(GameState):
         if self.picked_piece and self.legal_positions:
             for legal_pos in self.legal_positions:
                 # see https://stackoverflow.com/questions/6339057/draw-a-transparent-rectangle-in-pygame
+                # notice in this case piece still blocks the hint square but since we will eventually
+                # use transparent background piece it should be fine
                 surf = pygame.Surface(config.piece_size, pygame.SRCALPHA)
                 surf.fill(config.ui_colors.legal_pos)
                 screen.blit(surf, V2(config.board_pos) + (legal_pos.elementwise() * config.piece_size))
@@ -308,7 +307,6 @@ class JoinGame(GameState):
         self.status_text = str(self.network_engine.network_status)
         if self.network_engine.network_status == NetworkStatus.ERROR:
             self.status_text += self.network_engine.error_message
-
 
 
 class HostGame(GameState):
