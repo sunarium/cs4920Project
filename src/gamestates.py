@@ -113,6 +113,8 @@ class LocalGame(GameState):
         # debug
         self.engine.phase = 1
         self.engine.board.on_turn_change()
+        self.drag = False
+        self.handDisplayOffset = 0
 
 
 
@@ -127,8 +129,14 @@ class LocalGame(GameState):
                 elif config.hand_draw_area.collidepoint(*e.pos):
                     self.on_click_hand()
             elif e.type == pygame.MOUSEMOTION and e.buttons[0]:
+                    self.drag = True
+                    self.on_click_hand(e.pos)
+            # drag motion for dragging hand
+            elif e.type == pygame.MOUSEMOTION and e.buttons[0] and self.drag:
                 pass
-                # drag motion
+            elif e.type == pygame.MOUSEBUTTONUP:
+                self.drag = False
+
         # handle hand drag?
 
     def on_click_board(self, mouse_pos):
@@ -146,7 +154,7 @@ class LocalGame(GameState):
                 pass
 
 
-    def on_click_hand(self):
+    def on_click_hand(self, mouse_pos):
         pass
 
     def on_click_mana_pile(self):
