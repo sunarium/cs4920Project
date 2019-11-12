@@ -104,8 +104,6 @@ class GameEngine(object):
     def get_curr_hand(self):
         return self.current_player.hand
     # functions that alters game state; called by graphics engine
-    # todo do we do the phase check in game engine or graphics engine?
-    # for now we dont have phase checking.
 
     # recouperation phase
     # player tap a card in mana pile for mana
@@ -193,14 +191,13 @@ class GameEngine(object):
             self.phase += 1
 
 
-class NetworkGameEngine(GameEngine):
+class NetworkGameEngine:
     def __init__(self, debug=False):
-        super().__init__(debug=debug)
         self.engine = GameEngine(debug)
         self.error_message = ''
         self.network_status = NetworkStatus.INITIALIZED
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.is_my_turn: bool = False
+        # self.is_my_turn: bool = False
 
     def _handshake(self, addr):
         try:
@@ -229,6 +226,8 @@ class NetworkGameEngine(GameEngine):
         except NetworkError as e:
             self.network_status = NetworkStatus.ERROR
             self.error_message = e.args[0]
+            self.socket.close()
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def _await_handshake(self):
         self.socket.bind(('', config.DEFAULT_PORT))
@@ -258,10 +257,6 @@ class NetworkGameEngine(GameEngine):
 
     def get_network_status(self):
         return self.network_status
-
-    # for drawing
-    def get_game_state(self):
-        return self.engine.get_game_state()
 
     def check_opponent_move(self):
         try:

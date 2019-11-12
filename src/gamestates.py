@@ -20,6 +20,17 @@ class GameState(ABC):
     def handle_event(self, events:List[pygame.event.Event]):
         pass
 
+    def handle_button(self, events:List[pygame.event.Event]):
+        if not self.buttons:
+            return
+        for b in self.buttons:
+            b.activated = b.rect.collidepoint(*pygame.mouse.get_pos())
+        for e in events:
+            if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
+                for b in self.buttons:
+                    if b.activated: b.on_click()
+
+
     def set_next_state(self, next_state:str):
         self.next_state = state_list[next_state]()
 
@@ -78,13 +89,7 @@ class MainMenu(GameState):
             b.render(screen)
 
     def handle_event(self, events:List[pygame.event.Event]):
-        for b in self.buttons:
-            b.activated = b.rect.collidepoint(*pygame.mouse.get_pos())
-        for e in events:
-            if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
-                # left click event
-                for b in self.buttons:
-                    if b.activated: b.on_click()
+        self.handle_button(events)
 
 class LocalGame(GameState):
     def __init__(self, engine=None):
@@ -112,19 +117,15 @@ class LocalGame(GameState):
 
 
     def handle_event(self, events:List[pygame.event.Event]):
-        # todo: if game over, stop handle all mouse interaction except quit button
-        # handle mouse over
-        for b in self.buttons:
-            b.activated = b.rect.collidepoint(*pygame.mouse.get_pos())
+        # todo if game over, stop handling all mouse interaction except quit button
         # todo handle mouse click on card/piece/board/buttons
+        self.handle_button(events)
         for e in events:
             if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
                 if self.board_rect.collidepoint(*e.pos):
                     self.on_click_board(e.pos)
                 elif config.hand_draw_area.collidepoint(*e.pos):
                     self.on_click_hand()
-                for b in self.buttons:
-                    if b.activated: b.on_click()
             elif e.type == pygame.MOUSEMOTION and e.buttons[0]:
                 pass
                 # drag motion
@@ -151,23 +152,18 @@ class LocalGame(GameState):
     def on_click_mana_pile(self):
         pass
 
-
-
     def render(self, screen:pygame.Surface):
         self.render_ui_sprite(screen)
         for b in self.buttons:
             b.render(screen)
 
         # draw visual clues
-        # todo: currently pieces completely override the green
-        if self.picked_piece is not None:
-            if self.legal_positions is not None:
-                for legal_pos in self.legal_positions:
-                    rect = pygame.Rect(
-                        V2(config.board_pos) + (legal_pos.elementwise() * config.piece_size),
-                        config.piece_size
-                    )
-                    pygame.draw.rect(screen, config.ui_colors.legal_pos, rect)
+        if self.picked_piece and self.legal_positions:
+            for legal_pos in self.legal_positions:
+                # see https://stackoverflow.com/questions/6339057/draw-a-transparent-rectangle-in-pygame
+                surf = pygame.Surface(config.piece_size, pygame.SRCALPHA)
+                surf.fill(config.ui_colors.legal_pos)
+                screen.blit(surf, V2(config.board_pos) + (legal_pos.elementwise() * config.piece_size))
 
         # draw pieces
         for p in self.engine.board.pieces:
@@ -182,9 +178,6 @@ class LocalGame(GameState):
             screen.blit(surf, location)
 
         # draw picked piece
-
-
-
 
         # draw hand
         location = V2(config.hand_start_pos)
@@ -232,7 +225,6 @@ class LocalGame(GameState):
             config.turn_indicator_pos
         )
 
-
     # render sprites that doesnt need to move
     def render_ui_sprite(self, screen):
         screen.blit(config.game_background, (0,0))
@@ -248,17 +240,19 @@ class JoinGame(GameState):
         super().__init__()
         self.network_engine = NetworkGameEngine(debug=True)
         self.buttons = [
-            Button(self, config.buttons['back_to_main']),
+            Button(self, config.buttons['back_to_main'], on_click_callback=self.on_leave),
             Button(self, config.buttons['connect'], on_click_callback=self.connect_to)
         ]
         self.delete_frame_counter = config.connect.delete_frame_interval
         self.ip_string = ""
         self.status_text = ""
 
+    def on_leave(self):
+        self.network_engine.socket.close()
 
     def connect_to(self):
         self.status_text = ''
-        if self.ip_string != '':
+        if self.ip_string != '' and self.network_engine.network_status != NetworkStatus.CONNECTED:
             self.network_engine.connect_to(self.ip_string)
 
 
@@ -280,27 +274,22 @@ class JoinGame(GameState):
         screen.blit(input_ip, input_rect)
 
         # render error message if any
-        if self.status_text != '':
-            status = config.connect.status_font.render(self.status_text, True, config.connect.status_color)
-            status_rect = status.get_rect()
-            status_rect.center = config.connect.status_center
-            screen.blit(status, status_rect)
+        print(self.status_text)
+        status = config.connect.status_font.render(self.status_text, True, config.connect.status_color)
+        status_rect = status.get_rect()
+        status_rect.center = config.connect.status_center
+        screen.blit(status, status_rect)
 
 
     def handle_event(self, events:List[pygame.event.Event]):
+        self.handle_button(events)
         # user events
-        for b in self.buttons:
-            b.activated = b.rect.collidepoint(*pygame.mouse.get_pos())
         if pygame.key.get_pressed()[pygame.K_BACKSPACE]:
             self.delete_frame_counter -= 1
             if self.delete_frame_counter == 0:
                 self.ip_string = self.ip_string[:-1]
                 self.delete_frame_counter = config.connect.delete_frame_interval
         for e in events:
-            if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
-                # left click event
-                for b in self.buttons:
-                    if b.activated: b.on_click()
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_BACKSPACE:
                     self.ip_string = self.ip_string[:-1]

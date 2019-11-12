@@ -252,4 +252,4 @@ hand_margin = 20
 DEFAULT_PORT = 11235
 HANDSHAKE_TIMEOUT = 5
 CLIENT_REQUEST = b'ClientHello'
-SERVER_RESPONSE = b'ServerWavesback'
+SERVER_RESPONSE = b'ServerWavesBack'
