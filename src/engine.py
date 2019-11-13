@@ -72,9 +72,9 @@ class GameEngine(object):
         if debug:
             self.phase = 1
             self.board.on_turn_change()
-            self.board.pieces.append(Piece('rook',  (0, 0), PlayerColor.WHITE))
-            self.board.pieces.append(Piece('knight', (1, 0), PlayerColor.WHITE))
-            self.board.pieces.append(Piece('bishop', (2, 0), PlayerColor.WHITE))
+            self.board.pieces.append(Piece('rook',  (0, 0), PlayerColor.WHITE, self.board))
+            self.board.pieces.append(Piece('knight', (1, 0), PlayerColor.WHITE, self.board))
+            self.board.pieces.append(Piece('bishop', (2, 0), PlayerColor.WHITE, self.board))
             print(self.board.pieces)
 
         # initialize the game
