@@ -45,7 +45,7 @@ class Player(object):
         self.draw_card()
         # untap all cards
         for c in self.mana_pile:
-            c.tapped = True
+            c.tapped = False
 
     def draw_card(self):
         if len(self.hand) > config.HAND_SIZE:
