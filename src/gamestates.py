@@ -105,9 +105,9 @@ class LocalGame(GameState):
         self.hand_xoffset = 0
         self.board_rect = pygame.Rect(config.board_pos, config.board_size)
         self.drag = False
-        self.handDisplayOffset = 0
         # visual clues
         self.legal_positions = None
+        self.start_offset = 0
 
         # debug
         # i moved these to engine.__init__() --Henry
@@ -124,12 +124,15 @@ class LocalGame(GameState):
                 if self.board_rect.collidepoint(*e.pos):
                     self.on_click_board(e.pos)
                 elif config.hand_draw_area.collidepoint(*e.pos):
-                    self.on_click_hand()
-            elif e.type == pygame.MOUSEMOTION and e.buttons[0]:
-                    self.drag = True
                     self.on_click_hand(e.pos)
+                    self.drag = True
+                    posX, posY = e.pos
+                    self.start_offset = self.hand_xoffset - posX
             # drag motion for dragging hand
             elif e.type == pygame.MOUSEMOTION and e.buttons[0] and self.drag:
+                #print("motion")
+                posX, posY = e.pos
+                self.hand_xoffset = self.start_offset + posX
                 pass
             elif e.type == pygame.MOUSEBUTTONUP:
                 self.drag = False
@@ -188,6 +191,7 @@ class LocalGame(GameState):
 
         # draw hand
         location = V2(config.hand_start_pos)
+        location.x += self.hand_xoffset
         screen.set_clip(config.hand_draw_area)
         for c in self.engine.get_curr_hand():
             # todo if user dragged it, the starting position will change.
