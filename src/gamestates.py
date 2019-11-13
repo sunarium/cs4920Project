@@ -145,9 +145,8 @@ class LocalGame(GameState):
 
     def on_click_board(self, mouse_pos):
         piece_pos = (V2(mouse_pos) - config.board_pos) // config.piece_size[0]
-        if not self.picked_piece:
-            self.picked_piece = self.engine.grab_piece(piece_pos)
-        else:
+
+        if self.picked_piece is not None:
             try:
                 self.engine.move_piece(self.picked_piece, piece_pos)
                 self.picked_piece = None
@@ -156,6 +155,18 @@ class LocalGame(GameState):
             except IllegalPlayerActionError:
                 # todo we could play a sound here
                 pass
+        elif self.picked_card is not None:
+            try:
+                "this"
+                self.engine.play_card(self.picked_card, piece_pos)
+                self.picked_card = None
+            except:
+                print("this")
+                pass
+        elif not self.picked_piece:
+            self.picked_piece = self.engine.grab_piece(piece_pos)
+
+
 
 
     def on_click_hand(self, mouse_pos):
@@ -163,15 +174,6 @@ class LocalGame(GameState):
         print(hand_pos)
         if not self.picked_card and hand_pos >= 0:
             self.picked_card = hand_pos
-        """else:
-            try:
-                self.engine.move_piece(self.picked_piece, piece_pos)
-                self.picked_piece = None
-                if self.engine.game_ended:
-                    self.set_next_state("main_menu")
-            except IllegalPlayerActionError:
-                # todo we could play a sound here
-                pass"""
         pass
 
     def on_click_mana_pile(self):
