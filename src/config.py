@@ -234,6 +234,7 @@ hand_start_pos = (20, 680)
 deck_text_pos = (1010, 725)
 mana_start_pos = (70, 605)
 mana_text_pos = (20, 610)
+mana_zone = pygame.Rect((0,600), (900, 650))
 turn_indicator_pos = (955, 175)
 turn_indicator_font = ui_fonts.s
 # hand drawing shenanigans

@@ -108,6 +108,7 @@ class LocalGame(GameState):
         # visual clues
         self.legal_positions = None
         self.start_offset = 0
+        self.picked_card = None
 
         # debug
         # i moved these to engine.__init__() --Henry
@@ -128,6 +129,8 @@ class LocalGame(GameState):
                     self.drag = True
                     posX, posY = e.pos
                     self.start_offset = self.hand_xoffset - posX
+                elif config.mana_zone.collidepoint(*e.pos):
+                    self.on_click_mana_pile()
             # drag motion for dragging hand
             elif e.type == pygame.MOUSEMOTION and e.buttons[0] and self.drag:
                 #print("motion")
@@ -155,10 +158,24 @@ class LocalGame(GameState):
 
 
     def on_click_hand(self, mouse_pos):
+        hand_pos = (mouse_pos[0] - config.hand_start_pos[0] - self.hand_xoffset) // (config.card_size[0] + config.hand_margin)
+        if not self.picked_card:
+            self.picked_card = hand_pos
+        """else:
+            try:
+                self.engine.move_piece(self.picked_piece, piece_pos)
+                self.picked_piece = None
+                if self.engine.game_ended:
+                    self.set_next_state("main_menu")
+            except IllegalPlayerActionError:
+                # todo we could play a sound here
+                pass"""
         pass
 
     def on_click_mana_pile(self):
-        pass
+        if self.picked_card is not None:
+            print("qwer")
+            self.engine.place_to_mana_pile(self.picked_card)
 
     def render(self, screen:pygame.Surface):
         self.render_ui_sprite(screen)

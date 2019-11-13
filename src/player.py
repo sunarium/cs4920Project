@@ -69,6 +69,7 @@ class Player(object):
         try:
             card = self.hand[index]
         except IndexError:
+            print(index)
             raise IllegalCardSelection
         self.hand.remove(card)
         self.mana_pile.append(card)

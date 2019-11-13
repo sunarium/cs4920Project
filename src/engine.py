@@ -70,7 +70,7 @@ class GameEngine(object):
         # debug flag
         self.debug = debug
         if debug:
-            self.phase = 1
+            self.phase = 0
             self.board.on_turn_change()
             self.board.pieces.append(Piece('rook',  (0, 0), PlayerColor.WHITE, self.board))
             self.board.pieces.append(Piece('knight', (1, 0), PlayerColor.WHITE, self.board))
