@@ -136,6 +136,7 @@ class LocalGame(GameState):
                 #print("motion")
                 posX, posY = e.pos
                 self.hand_xoffset = self.start_offset + posX
+                self.picked_card = None
                 pass
             elif e.type == pygame.MOUSEBUTTONUP:
                 self.drag = False
@@ -159,7 +160,8 @@ class LocalGame(GameState):
 
     def on_click_hand(self, mouse_pos):
         hand_pos = (mouse_pos[0] - config.hand_start_pos[0] - self.hand_xoffset) // (config.card_size[0] + config.hand_margin)
-        if not self.picked_card:
+        print(hand_pos)
+        if not self.picked_card and hand_pos >= 0:
             self.picked_card = hand_pos
         """else:
             try:
@@ -176,6 +178,7 @@ class LocalGame(GameState):
         if self.picked_card is not None:
             print("qwer")
             self.engine.place_to_mana_pile(self.picked_card)
+            self.picked_card = None
 
     def render(self, screen:pygame.Surface):
         self.render_ui_sprite(screen)
