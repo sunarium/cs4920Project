@@ -251,7 +251,21 @@ class LocalGame(GameState):
             config.ui_fonts.s.render(text, True, config.ui_colors.black),
             config.mana_text_pos
         )
-        # todo draw phase indicator
+
+        #  draw phase indicator
+        if self.engine.phase == 0:
+            text = "Main Phase"
+        elif self.engine.phase == 1:
+            text = "Action Phase"
+        elif self.engine.phase == 2:
+            text = "Second Main"
+
+        screen.blit(
+            config.ui_fonts.s.render(text, True, config.ui_colors.black),
+            config.phase_text_pos
+        )
+
+
         text = 'Player %d turn' % self.engine.current_player.color
         screen.blit(
             config.turn_indicator_font.render(text, True, config.ui_colors.black),
