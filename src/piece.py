@@ -108,7 +108,7 @@ class Piece():
             for v in self._movement_vector:
                 v = Vector2(v)
                 for i in range(1, config.BOARD_SIZE):
-                    if self.name == 'king' and i > 1: break
+                    if self.name in ('king', 'knight') and i > 1: break
                     if board.in_board_range(self.pos + i * v) and \
                         board.get_owner(self.pos + i * v) == PlayerColor.EMPTY:
                         mlist.append(self.pos + i * v)

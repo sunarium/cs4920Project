@@ -71,11 +71,11 @@ class GameEngine(object):
         self.debug = debug
         if debug:
             self.phase = 1
+            Piece('rook',  (0, 0), PlayerColor.WHITE, self.board)
+            Piece('knight', (1, 0), PlayerColor.WHITE, self.board)
+            Piece('bishop', (2, 0), PlayerColor.WHITE, self.board)
+            Piece('pawn', (0, 7), PlayerColor.WHITE, self.board)
             self.board.on_turn_change()
-            self.board.pieces.append(Piece('rook',  (0, 0), PlayerColor.WHITE))
-            self.board.pieces.append(Piece('knight', (1, 0), PlayerColor.WHITE))
-            self.board.pieces.append(Piece('bishop', (2, 0), PlayerColor.WHITE))
-            print(self.board.pieces)
 
         # initialize the game
         self.current_player.on_turn_start()
@@ -205,7 +205,14 @@ class NetworkGameEngine:
         self.error_message = ''
         self.network_status = NetworkStatus.INITIALIZED
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # self.is_my_turn: bool = False
+        self.queue = queue.Queue()
+        self.is_my_turn: bool = False
+
+    def reset(self):
+        self.socket.close()
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.network_status = NetworkStatus.INITIALIZED
+        self.error_message = ''
 
     def _handshake(self, addr):
         try:
@@ -229,13 +236,11 @@ class NetworkGameEngine:
                 raise NetworkError('server response do not match')
             self.network_status = NetworkStatus.CONNECTED
             self.socket.settimeout(0)  # disable timeout
-            self.socket.setblocking(False)
             print('client: server connected')
         except NetworkError as e:
             self.network_status = NetworkStatus.ERROR
             self.error_message = e.args[0]
-            self.socket.close()
-            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 
     def _await_handshake(self):
         self.socket.bind(('', config.DEFAULT_PORT))
@@ -251,7 +256,6 @@ class NetworkGameEngine:
         self.socket = _sock
         self.socket.send(config.SERVER_RESPONSE)
         self.network_status = NetworkStatus.CONNECTED
-        self.socket.setblocking(False)
         print('server: client connected')
 
     # called if run as client
@@ -266,18 +270,40 @@ class NetworkGameEngine:
     def get_network_status(self):
         return self.network_status
 
-    def check_opponent_move(self):
-        try:
-            opponent_move = self.socket.recv(1024)
-            if opponent_move == b'':  # todo: discuss with gui team on how to handle this.
-                self.network_status = NetworkStatus.ERROR
-                self.error_message = 'socket closed'
-                return
-        except (socket.error, BlockingIOError):
-            pass
+    # ↑ handshake code
+    ##############################################################################
+    # ↓ game running code
 
-        # todo: handle opponent move
-        pass
+    def listener(self):
+        assert self.network_status == NetworkStatus.CONNECTED
+        while not self.engine.game_ended:
+            # todo: add check for closed socket
+            msg = self.socket.recv(1024)
+            assert msg.startswith(b'<')
+            while not msg.endswith(b'>'):
+                msg += self.socket.recv(1024)
+            self.queue.put_nowait(msg.decode('ascii'))
 
     def on_game_start(self):
+        # todo: init game?
+        threading.Thread(target=self.listener).start()
+        pass
+
+    def on_game_tick(self):
+        if not self.queue.empty():
+            raw_msg = self.queue.get_nowait()
+            # todo: translate message to function calls to `self.engine`
+            msg = raw_msg.strip('<>').split('|')
+            if msg[0] == 'PlacedMana':
+                pass
+            elif msg[0] == 'PlacedPiece':
+                pass
+            elif msg[0] == 'MovedPiece':
+                pass
+            elif msg[0] == 'NextPhase':
+                pass
+            elif msg[0] == 'NextTurn':
+                pass
+            print(raw_msg)
+            print(msg)
         pass

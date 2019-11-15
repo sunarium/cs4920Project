@@ -112,9 +112,6 @@ class LocalGame(GameState):
         # debug
         # i moved these to engine.__init__() --Henry
 
-
-
-
     def handle_event(self, events:List[pygame.event.Event]):
         # todo if game over, stop handling all mouse interaction except quit button
         # todo handle mouse click on card/piece/board/buttons
@@ -149,7 +146,6 @@ class LocalGame(GameState):
             except IllegalPlayerActionError:
                 # todo we could play a sound here
                 pass
-
 
     def on_click_hand(self, mouse_pos):
         pass
@@ -242,6 +238,12 @@ class LocalGame(GameState):
         mouse_pos /= config.piece_size
         return mouse_pos
 
+class NetworkedGame(LocalGame):
+    def __init__(self, network_engine:NetworkGameEngine):
+        super().__init__()
+        self.network_engine = network_engine
+        self.engine = network_engine.engine
+
 class JoinGame(GameState):
     def __init__(self):
         super().__init__()
@@ -258,9 +260,11 @@ class JoinGame(GameState):
         self.network_engine.socket.close()
 
     def connect_to(self):
-        self.status_text = ''
         if self.ip_string != '' and self.network_engine.network_status != NetworkStatus.CONNECTED:
+            self.status_text = ''
+            self.network_engine.reset()
             self.network_engine.connect_to(self.ip_string)
+
 
 
     def render(self, screen:pygame.Surface):
@@ -307,6 +311,8 @@ class JoinGame(GameState):
         self.status_text = str(self.network_engine.network_status)
         if self.network_engine.network_status == NetworkStatus.ERROR:
             self.status_text += self.network_engine.error_message
+
+
 
 
 class HostGame(GameState):
