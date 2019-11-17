@@ -105,9 +105,10 @@ class LocalGame(GameState):
         self.hand_xoffset = 0
         self.board_rect = pygame.Rect(config.board_pos, config.board_size)
         self.drag = False
-        self.handDisplayOffset = 0
         # visual clues
         self.legal_positions = None
+        self.start_offset = 0
+        self.picked_card = None
 
         # debug
         # i moved these to engine.__init__() --Henry
@@ -121,12 +122,18 @@ class LocalGame(GameState):
                 if self.board_rect.collidepoint(*e.pos):
                     self.on_click_board(e.pos)
                 elif config.hand_draw_area.collidepoint(*e.pos):
-                    self.on_click_hand()
-            elif e.type == pygame.MOUSEMOTION and e.buttons[0]:
-                    self.drag = True
                     self.on_click_hand(e.pos)
+                    self.drag = True
+                    posX, posY = e.pos
+                    self.start_offset = self.hand_xoffset - posX
+                elif config.mana_zone.collidepoint(*e.pos):
+                    self.on_click_mana_pile()
             # drag motion for dragging hand
             elif e.type == pygame.MOUSEMOTION and e.buttons[0] and self.drag:
+                #print("motion")
+                posX, posY = e.pos
+                self.hand_xoffset = self.start_offset + posX
+                self.picked_card = None
                 pass
             elif e.type == pygame.MOUSEBUTTONUP:
                 self.drag = False
@@ -135,9 +142,8 @@ class LocalGame(GameState):
 
     def on_click_board(self, mouse_pos):
         piece_pos = (V2(mouse_pos) - config.board_pos) // config.piece_size[0]
-        if not self.picked_piece:
-            self.picked_piece = self.engine.grab_piece(piece_pos)
-        else:
+
+        if self.picked_piece is not None:
             try:
                 self.engine.move_piece(self.picked_piece, piece_pos)
                 self.picked_piece = None
@@ -146,12 +152,31 @@ class LocalGame(GameState):
             except IllegalPlayerActionError:
                 # todo we could play a sound here
                 pass
+        elif self.picked_card is not None:
+            try:
+                "this"
+                self.engine.play_card(self.picked_card, piece_pos)
+                self.picked_card = None
+            except:
+                print("this")
+                pass
+        elif not self.picked_piece:
+            self.picked_piece = self.engine.grab_piece(piece_pos)
+
+
 
     def on_click_hand(self, mouse_pos):
+        hand_pos = (mouse_pos[0] - config.hand_start_pos[0] - self.hand_xoffset) // (config.card_size[0] + config.hand_margin)
+        print(hand_pos)
+        if not self.picked_card and hand_pos >= 0:
+            self.picked_card = hand_pos
         pass
 
     def on_click_mana_pile(self):
-        pass
+        if self.picked_card is not None:
+            print("qwer")
+            self.engine.place_to_mana_pile(self.picked_card)
+            self.picked_card = None
 
     def render(self, screen:pygame.Surface):
         self.render_ui_sprite(screen)
@@ -184,6 +209,7 @@ class LocalGame(GameState):
 
         # draw hand
         location = V2(config.hand_start_pos)
+        location.x += self.hand_xoffset
         screen.set_clip(config.hand_draw_area)
         for c in self.engine.get_curr_hand():
             # todo if user dragged it, the starting position will change.
@@ -221,7 +247,21 @@ class LocalGame(GameState):
             config.ui_fonts.s.render(text, True, config.ui_colors.black),
             config.mana_text_pos
         )
-        # todo draw phase indicator
+
+        #  draw phase indicator
+        if self.engine.phase == 0:
+            text = "Main Phase"
+        elif self.engine.phase == 1:
+            text = "Action Phase"
+        elif self.engine.phase == 2:
+            text = "Second Main"
+
+        screen.blit(
+            config.ui_fonts.s.render(text, True, config.ui_colors.black),
+            config.phase_text_pos
+        )
+
+
         text = 'Player %d turn' % self.engine.current_player.color
         screen.blit(
             config.turn_indicator_font.render(text, True, config.ui_colors.black),

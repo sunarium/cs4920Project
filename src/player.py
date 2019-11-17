@@ -45,7 +45,7 @@ class Player(object):
         self.draw_card()
         # untap all cards
         for c in self.mana_pile:
-            c.tapped = True
+            c.tapped = False
 
     def draw_card(self):
         if len(self.hand) > config.HAND_SIZE:
@@ -69,6 +69,7 @@ class Player(object):
         try:
             card = self.hand[index]
         except IndexError:
+            print(index)
             raise IllegalCardSelection
         self.hand.remove(card)
         self.mana_pile.append(card)

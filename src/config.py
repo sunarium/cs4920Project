@@ -195,10 +195,10 @@ buttons = {
     },
     'next_phase': {
         'text': 'next_phase',
-        'left': 1020,
-        'top': 400,
-        'width': 80,
-        'height': 30,
+        'left': 1100,
+        'top': 550,
+        'width': 100,
+        'height': 50,
         'color': ui_colors.red,
         'active_color': ui_colors.light_red,
         'help_text': '',
@@ -234,8 +234,10 @@ hand_start_pos = (20, 680)
 deck_text_pos = (1010, 725)
 mana_start_pos = (70, 605)
 mana_text_pos = (20, 610)
+mana_zone = pygame.Rect((0,600), (900, 650))
 turn_indicator_pos = (955, 175)
 turn_indicator_font = ui_fonts.s
+phase_text_pos = (910, 555)
 # hand drawing shenanigans
 hand_draw_area = pygame.Rect((0, 661), (901, 240))
 
