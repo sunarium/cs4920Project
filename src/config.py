@@ -31,6 +31,8 @@ MANA_PER_TURN = 0
 # mana gained for placing this piece on mana pile
 MANA_GAIN = {
     'pawn': 1,
+    'bishop': 1,
+    'knight': 1,
     'rook': 1,
     'queen': 1
 }
@@ -77,6 +79,17 @@ ui_fonts.l  = pygame.font.SysFont("comicsansms", 75)
 assetsroot = 'assets/'
 window_icon = pygame.image.load(assetsroot + 'icon.png')
 game_background = pygame.image.load(assetsroot + 'UI_v0.5.png')
+board_background = pygame.image.load(assetsroot + 'board_bg.png')
+game_board = pygame.image.load(assetsroot + 'board.png')
+hand_bg = pygame.image.load(assetsroot + 'hand_bg.png')
+mana_bg = pygame.image.load(assetsroot + 'mana_bg.png')
+deck_bg = pygame.image.load(assetsroot + 'deck_bg.png')
+side_info_bg = pygame.image.load(assetsroot + 'side_info_bg.png')
+phase_bg = pygame.image.load(assetsroot + 'phase_bg.png')
+black_indicator_active = pygame.image.load(assetsroot + 'black_indicator_active.png')
+black_indicator = pygame.image.load(assetsroot + 'black_indicator.png')
+white_indicator_active = pygame.image.load(assetsroot + 'white_indicator_active.png')
+white_indicator = pygame.image.load(assetsroot + 'white_indicator.png')
 tm_logo = 'tm.png'
 
 # other UI elements
@@ -229,14 +242,26 @@ board_size = (600, 600)
 piece_size = (75, 75)
 card_size = (150, 200)
 # positions
-board_pos = (150, 0)
+board_pos = (149, 0)
 hand_start_pos = (20, 680)
+hand_bg_pos = (0,661)
 deck_text_pos = (1010, 725)
+deck_pos = (965,636)
 mana_start_pos = (70, 605)
 mana_text_pos = (20, 610)
+mana_bg_pos = (0,601)
 mana_zone = pygame.Rect((0,600), (900, 650))
+side_info_bg_pos = (902,0)
+phase_bg_pos = (902,550)
+deck_bg_pos = (902,601)
+black_indicator_pos = (965,122)
+white_indicator_pos = (1091,122)
 turn_indicator_pos = (955, 175)
 turn_indicator_font = ui_fonts.s
+opponent_mana_pos = (970, 205)
+opponent_mana_font = ui_fonts.xs
+opponent_hand_pos = (970, 225)
+opponent_hand_font = ui_fonts.xs
 phase_text_pos = (910, 555)
 # hand drawing shenanigans
 hand_draw_area = pygame.Rect((0, 661), (901, 240))
