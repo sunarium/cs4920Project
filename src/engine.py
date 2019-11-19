@@ -40,14 +40,14 @@ class NetworkStatus(IntEnum):
 
 
 class GameEngine(object):
-    def __init__(self, debug=False):
+    def __init__(self, debug=False, first_player=PlayerColor.WHITE):
         # game ends when a player loses his king
         self.game_ended = False
         self.winner = None
 
         # white goes first as per chess tradition
-        self.current_player = Player(PlayerColor.WHITE)
-        self.waiting_player = Player(PlayerColor.BLACK)
+        self.current_player = Player(first_player)
+        self.waiting_player = Player(0 - first_player.value)
         self.board = Board()
 
         self.phase = GamePhase.MAIN
@@ -67,8 +67,8 @@ class GameEngine(object):
         # debug flag
         self.debug = debug
         if debug:
+            print('WARNING DEBUG MODE')
             self.phase = 0
-            self.board.on_turn_change()
             self.board.pieces.append(Piece('rook',  (0, 0), PlayerColor.WHITE, self.board))
             self.board.pieces.append(Piece('knight', (1, 0), PlayerColor.WHITE, self.board))
             self.board.pieces.append(Piece('bishop', (2, 0), PlayerColor.WHITE, self.board))
@@ -127,7 +127,7 @@ class GameEngine(object):
     # if card is piece card, this action places the piece onto the board.
     # raise exception if illegal index or invalid target or insufficient mana
     def play_card(self, card_index: int, target: Union[Vector2, Tuple[int, int]]):
-        if not self.phase == GamePhase.MAIN:
+        if not self.debug and not self.phase == GamePhase.MAIN:
             raise IllegalPlayerActionError("you can only play card in main phase")
         self.current_player.play_card(card_index, target, self.board)
 
@@ -167,8 +167,11 @@ class GameEngine(object):
 
         # if king is captured, player made this move wins
         if captured_piece and captured_piece.name == 'king':
-            self.winner = self.current_player
+            self.winner = self.determine_winnder()
             self.game_ended = True
+
+    def determine_winner(self):
+        return self.current_player
 
     # if current player can move piece at pos, return piece
     # otherwise return None
@@ -197,10 +200,14 @@ class GameEngine(object):
         else:
             self.phase += 1
 
+    def get_is_my_turn(self):
+        return True
 
-class NetworkGameEngine:
-    def __init__(self, debug=False):
-        self.engine = GameEngine(debug)
+
+class NetworkGameEngine(GameEngine):
+    def __init__(self, debug=True, is_host=True):
+        firstplayer_color = PlayerColor.WHITE if is_host else PlayerColor.BLACK
+        super().__init__(debug=debug, first_player=firstplayer_color)
         self.error_message = ''
         self.network_status = NetworkStatus.INITIALIZED
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -265,6 +272,7 @@ class NetworkGameEngine:
                 _sock.close()
         s.close()
         self.socket = _sock
+        self.socket.setblocking(True)
         self.socket.send(config.SERVER_RESPONSE)
         self.network_status = NetworkStatus.CONNECTED
         print('server: client connected')
@@ -282,6 +290,7 @@ class NetworkGameEngine:
         return self.network_status
 
     def __del__(self):
+        pass
         self.socket.close()
 
     # ↑ handshake code
@@ -290,32 +299,106 @@ class NetworkGameEngine:
 
     def listener(self):
         assert self.network_status == NetworkStatus.CONNECTED
-        while not self.engine.game_ended:
+        while not self.game_ended:
             # todo: add check for closed socket
             msg = self.socket.recv(1024)
-            assert msg.startswith(b'<')
-            while not msg.endswith(b'>'):
+            if self.is_my_turn or msg == b'':
+                continue
+            assert msg.startswith(b'<') # fixme: drop the assert after testing
+            while not msg.endswith(b'\n'):
                 msg += self.socket.recv(1024)
             self.queue.put_nowait(msg.decode('ascii'))
 
     def on_game_start(self):
+        self.socket.setblocking(True)
         threading.Thread(target=self.listener).start()
+
 
     def on_game_tick(self):
         if not self.queue.empty():
             raw_msg = self.queue.get_nowait()
             # todo: translate message to function calls to `self.engine`
-            msg = raw_msg.strip('<>').split('|')
+            msg = raw_msg.strip().strip('<>').split('|')
+            for i, arg in enumerate(msg[1:]):
+                try:
+                    msg[i+1] = int(float(arg))
+                except ValueError:
+                    pass
+
             if msg[0] == 'PlacedMana':
-                pass
+                self.waiting_player.place_to_mana_pile(msg[1])
             elif msg[0] == 'PlacedPiece':
-                pass
+                # fixme:should pass in card name and construct and play the card.
+                print(self.waiting_player.hand)
+                self.waiting_player.play_card(int(msg[1]), (int(msg[2]), int(msg[3])), self.board) # broken
             elif msg[0] == 'MovedPiece':
-                pass
+                # fixme:board in client is weird?
+                # uncomment these two lines to see
+                # for p in self.board.pieces:
+                #     print(p.pos, p.owner, p.name)
+                old_pos = Vector2(msg[2], msg[3])
+                piece = self.board.get_piece(old_pos)
+                assert piece # fixme:replace this with error checking after testing
+                self.move_piece(piece, tuple(msg[4:5]))
             elif msg[0] == 'NextPhase':
-                pass
+                self.phase_change()
             elif msg[0] == 'NextTurn':
-                pass
-            print(raw_msg)
-            print(msg)
+                self.turn_switch()
+            else:
+                print('!!!!'+ raw_msg)
         pass
+
+    # overidden methods
+    def turn_switch(self):
+        self.phase = GamePhase.MAIN
+        self.board.on_turn_change()
+        self.has_placed_to_mana = False
+        self.has_moved_piece = False
+        if self.get_is_my_turn():
+            self.socket.send(b'<NextTurn>\n')
+            self.current_player.on_turn_end()
+            self.waiting_player.on_turn_start()
+            self.is_my_turn = False
+        else:
+            self.waiting_player.on_turn_end()
+            self.current_player.on_turn_start()
+            self.is_my_turn = True
+
+    def determine_winner(self):
+        if self.is_my_turn:
+            return self.current_player
+        return self.waiting_player
+
+    def phase_change(self):
+        super().phase_change()
+        if self.is_my_turn:
+            self.socket.send(b'<NextPhase>\n')
+
+    def move_piece(self, piece: Piece, new_pos: Union[Vector2, Tuple[int, int]]):
+        old_pos = piece.pos
+        super().move_piece(piece, new_pos)
+        if self.is_my_turn:
+            message = f'<MovedPiece|{old_pos.x}|{old_pos.y}|{new_pos[0]}|{new_pos[1]}>\n'
+            self.socket.send(message.encode('ascii'))
+
+    def play_card(self, card_index: int, target: Union[Vector2, Tuple[int, int]]):
+        try:
+            super().play_card(card_index, target)
+        except IllegalPlayerActionError:
+            if self.is_my_turn:
+                raise
+        if self.is_my_turn:
+            message = f'<PlacedPiece|{card_index}|{target[0]}|{target[1]}>\n'
+            self.socket.send(message.encode('ascii'))
+
+    def place_to_mana_pile(self, card_index: int):
+        try:
+            super().place_to_mana_pile(card_index)
+        except IllegalPlayerActionError:
+            if self.is_my_turn:
+                raise
+        if self.is_my_turn:
+            self.socket.send(f'<PlacedMana|{card_index}>\n'.encode('ascii'))
+
+    def get_is_my_turn(self):
+        return self.is_my_turn

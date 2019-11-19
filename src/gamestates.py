@@ -92,7 +92,7 @@ class MainMenu(GameState):
         self.handle_button(events)
 
 class LocalGame(GameState):
-    def __init__(self, network_engine=None):
+    def __init__(self, engine=None):
         super().__init__()
         self.buttons = [
             Button(self, config.buttons['back_to_main_ingame']),
@@ -100,10 +100,8 @@ class LocalGame(GameState):
             Button(self, config.buttons['next_turn'], on_click_callback=self.turn_change),
         ]
         # game engine
-        if network_engine:
-            self.network_engine:NetworkGameEngine = network_engine
-            self.engine = network_engine.engine
-            self.is_my_turn = self.network_engine.is_my_turn
+        if engine:
+            self.engine = engine
         else:
             self.engine = GameEngine(debug=True)
 
@@ -119,15 +117,23 @@ class LocalGame(GameState):
 
         # debug
     def phase_change(self):
-        self.engine.phase_change()
+        if self.engine.get_is_my_turn():
+            self.engine.phase_change()
 
     def turn_change(self):
-        self.engine.turn_switch()
+        if self.engine.get_is_my_turn():
+            self.engine.turn_switch()
 
     def handle_event(self, events:List[pygame.event.Event]):
         # todo if game over, stop handling all mouse interaction except quit button
-        # todo if not my turn, do not handle events
+
         self.handle_button(events)
+
+        # if not my turn, do not handle events
+        if not self.engine.get_is_my_turn(): # todo need testing
+            self.engine.on_game_tick()
+            return
+
         for e in events:
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == pygame.BUTTON_LEFT:
                 if self.board_rect.collidepoint(*e.pos):
@@ -159,15 +165,16 @@ class LocalGame(GameState):
                 self.picked_piece = None
                 if self.engine.game_ended:
                     self.set_next_state("main_menu")
-            except IllegalPlayerActionError:
+            except IllegalPlayerActionError as e:
+                print(e)
                 # todo we could play a sound here
                 pass
         elif self.picked_card:
             try:
                 self.engine.play_card(self.picked_card, piece_pos)
                 self.picked_card = None
-            except:
-                pass
+            except Exception as e:
+                print(e)
         elif not self.picked_piece:
             self.picked_piece = self.engine.grab_piece(piece_pos)
 
@@ -269,11 +276,11 @@ class LocalGame(GameState):
 
 
         # draw player indicator
-        if self.engine.current_player.color == PlayerColor.WHITE:
+        if (self.engine.current_player.color == PlayerColor.WHITE) ^ (not self.engine.get_is_my_turn()):
             p_colour = "white"
             black_ind = config.black_indicator
             white_ind = config.white_indicator_active
-        elif self.engine.current_player.color == PlayerColor.BLACK:
+        else:
             p_colour = "black"
             black_ind = config.black_indicator_active
             white_ind = config.white_indicator
@@ -323,7 +330,7 @@ class HostGame(GameState):
     def __init__(self):
         super().__init__()
         self.buttons = [Button(self, config.buttons['back_to_main'], on_click_callback=self.on_exit)]
-        self.network_engine = NetworkGameEngine(debug=True)
+        self.network_engine = NetworkGameEngine(debug=True, is_host=True)
         self.local_ip = self.get_local_ip()
         self.network_engine.host_game()
 
@@ -360,18 +367,19 @@ class HostGame(GameState):
     def handle_event(self, events:List[pygame.event.Event]):
         self.handle_button(events)
         if self.network_engine.network_status == NetworkStatus.CONNECTED:
-            self.set_next_state('main_menu')
+            self.network_engine.on_game_start()
+            self.next_state = LocalGame(engine=self.network_engine)
 
 class JoinGame(GameState):
     def __init__(self):
         super().__init__()
-        self.network_engine = NetworkGameEngine(debug=True)
+        self.network_engine = NetworkGameEngine(debug=True, is_host=False)
         self.buttons = [
             Button(self, config.buttons['back_to_main'], on_click_callback=self.on_leave),
             Button(self, config.buttons['connect'], on_click_callback=self.connect_to)
         ]
         self.delete_frame_counter = config.connect.delete_frame_interval
-        self.ip_string = ""
+        self.ip_string = "127.0.0.1"
         self.status_text = ""
 
     def on_leave(self):
@@ -406,7 +414,6 @@ class JoinGame(GameState):
         status_rect.center = config.connect.status_center
         screen.blit(status, status_rect)
 
-
     def handle_event(self, events:List[pygame.event.Event]):
         self.handle_button(events)
         # user events
@@ -428,7 +435,8 @@ class JoinGame(GameState):
             self.status_text += self.network_engine.error_message
 
         if self.network_engine.network_status == NetworkStatus.CONNECTED:
-            self.next_state = LocalGame()
+            self.network_engine.on_game_start()
+            self.next_state = LocalGame(engine=self.network_engine)
 
 state_list = {
     'main_menu': MainMenu,

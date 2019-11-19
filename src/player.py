@@ -82,7 +82,6 @@ class Player(object):
             raise IllegalCardSelection
 
         cost = config.MANA_COST[card.name]
-        print("cost" + str(cost))
         if self.turn_mana < cost:
             raise IllegalPlayerActionError('Insufficient mana')
         # take mana cost
@@ -96,5 +95,6 @@ class Player(object):
                 break
 
         # play the card
+        print('played card at', index)
         self.hand.remove(card)
         card.played(board, target)
