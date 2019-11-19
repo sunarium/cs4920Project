@@ -9,7 +9,6 @@ from src import config
 class Board(object):
     def __init__(self):
         self.pieces = []
-        # todo:initialize king?
 
     def get_piece(self, pos:Union[Vector2, Tuple[int, int]]):
         for p in self.pieces:

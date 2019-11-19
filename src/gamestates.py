@@ -118,7 +118,7 @@ class LocalGame(GameState):
         # todo handle mouse click on card/piece/board/buttons
         self.handle_button(events)
         for e in events:
-            if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
+            if e.type == pygame.MOUSEBUTTONDOWN and e.button == pygame.BUTTON_LEFT:
                 if self.board_rect.collidepoint(*e.pos):
                     self.on_click_board(e.pos)
                 elif config.hand_draw_area.collidepoint(*e.pos):
@@ -137,13 +137,13 @@ class LocalGame(GameState):
                 pass
             elif e.type == pygame.MOUSEBUTTONUP:
                 self.drag = False
-
-        # handle hand drag?
+            elif e.type == pygame.MOUSEBUTTONDOWN and e.button == pygame.BUTTON_RIGHT:
+                self.picked_piece = None
+                self.picked_card = None
 
     def on_click_board(self, mouse_pos):
         piece_pos = (V2(mouse_pos) - config.board_pos) // config.piece_size[0]
-
-        if self.picked_piece is not None:
+        if self.picked_piece:
             try:
                 self.engine.move_piece(self.picked_piece, piece_pos)
                 self.picked_piece = None
@@ -152,7 +152,7 @@ class LocalGame(GameState):
             except IllegalPlayerActionError:
                 # todo we could play a sound here
                 pass
-        elif self.picked_card is not None:
+        elif self.picked_card:
             try:
                 "this"
                 self.engine.play_card(self.picked_card, piece_pos)
@@ -162,8 +162,6 @@ class LocalGame(GameState):
                 pass
         elif not self.picked_piece:
             self.picked_piece = self.engine.grab_piece(piece_pos)
-
-
 
     def on_click_hand(self, mouse_pos):
         hand_pos = (mouse_pos[0] - config.hand_start_pos[0] - self.hand_xoffset) // (config.card_size[0] + config.hand_margin)
@@ -179,17 +177,10 @@ class LocalGame(GameState):
             self.picked_card = None
 
     def render(self, screen:pygame.Surface):
+        # draw game backgrounds
         self.render_ui_sprite(screen)
 
-        # draw game backgrounds
-        screen.blit(config.board_background, (0,0))
-        screen.blit(config.game_board, config.board_pos)
-        screen.blit(config.hand_bg, config.hand_bg_pos)
-        screen.blit(config.mana_bg, config.mana_bg_pos)
-        screen.blit(config.side_info_bg, config.side_info_bg_pos)
-        screen.blit(config.phase_bg, config.phase_bg_pos)
-        screen.blit(config.side_info_bg, config.deck_bg_pos)
-        screen.blit(config.deck_bg, config.deck_pos)
+        # draw button
         for b in self.buttons:
             b.render(screen)
 
@@ -203,6 +194,7 @@ class LocalGame(GameState):
                 surf.fill(config.ui_colors.legal_pos)
                 screen.blit(surf, V2(config.board_pos) + (legal_pos.elementwise() * config.piece_size))
 
+
         # draw pieces
         for p in self.engine.board.pieces:
             if p == self.picked_piece:
@@ -214,8 +206,6 @@ class LocalGame(GameState):
             assetfile = p.asset_name()
             surf = pygame.image.load(config.assetsroot+assetfile)
             screen.blit(surf, location)
-
-        # draw picked piece
 
         # draw hand
         location = V2(config.hand_start_pos)
@@ -308,6 +298,14 @@ class LocalGame(GameState):
     # render sprites that doesnt need to move
     def render_ui_sprite(self, screen):
         screen.blit(config.game_background, (0,0))
+        screen.blit(config.board_background, (0,0))
+        screen.blit(config.game_board, config.board_pos)
+        screen.blit(config.hand_bg, config.hand_bg_pos)
+        screen.blit(config.mana_bg, config.mana_bg_pos)
+        screen.blit(config.side_info_bg, config.side_info_bg_pos)
+        screen.blit(config.phase_bg, config.phase_bg_pos)
+        screen.blit(config.side_info_bg, config.deck_bg_pos)
+        screen.blit(config.deck_bg, config.deck_pos)
 
     def click_to_board_pos(self, mouse_pos)-> pygame.Vector2:
         mouse_pos = pygame.Vector2(mouse_pos)
@@ -341,8 +339,6 @@ class JoinGame(GameState):
             self.status_text = ''
             self.network_engine.reset()
             self.network_engine.connect_to(self.ip_string)
-
-
 
     def render(self, screen:pygame.Surface):
         screen.fill(config.ui_colors.goldenrod)
@@ -389,7 +385,8 @@ class JoinGame(GameState):
         if self.network_engine.network_status == NetworkStatus.ERROR:
             self.status_text += self.network_engine.error_message
 
-
+        if self.network_engine.network_status == NetworkStatus.CONNECTED:
+            self.next_state = LocalGame()
 
 
 class HostGame(GameState):

@@ -57,9 +57,6 @@ class GameEngine(object):
             self.current_player.draw_card()
             self.waiting_player.draw_card()
 
-        Piece("king", Vector2(4, 7), -1, self.board)
-        Piece("king", Vector2(4, 0), 1, self.board)
-
         # for display
         self.newly_drawn = None
 
@@ -79,7 +76,9 @@ class GameEngine(object):
 
         # initialize the game
         self.current_player.on_turn_start()
-
+        Piece("king", Vector2(4, 7), -1, self.board)
+        Piece("king", Vector2(4, 0), 1, self.board)
+        self.board.on_turn_change()
 
     def debug_dump(self):
         if not self.debug:
