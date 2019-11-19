@@ -94,7 +94,7 @@ class MainMenu(GameState):
 class LocalGame(GameState):
     def __init__(self):
         super().__init__()
-        self.engine = GameEngine(debug=True)
+        self.engine = GameEngine(debug=False)
         self.buttons = [
             Button(self, config.buttons['back_to_main_ingame']),
             Button(self, config.buttons['next_phase'], on_click_callback=self.engine.phase_change),
@@ -180,6 +180,16 @@ class LocalGame(GameState):
 
     def render(self, screen:pygame.Surface):
         self.render_ui_sprite(screen)
+
+        # draw game backgrounds
+        screen.blit(config.board_background, (0,0))
+        screen.blit(config.game_board, config.board_pos)
+        screen.blit(config.hand_bg, config.hand_bg_pos)
+        screen.blit(config.mana_bg, config.mana_bg_pos)
+        screen.blit(config.side_info_bg, config.side_info_bg_pos)
+        screen.blit(config.phase_bg, config.phase_bg_pos)
+        screen.blit(config.side_info_bg, config.deck_bg_pos)
+        screen.blit(config.deck_bg, config.deck_pos)
         for b in self.buttons:
             b.render(screen)
 
@@ -262,11 +272,38 @@ class LocalGame(GameState):
         )
 
 
-        text = 'Player %d turn' % self.engine.current_player.color
+        # draw player indicator
+        if self.engine.current_player.color == PlayerColor.WHITE:
+            p_colour = "white"
+            black_ind = config.black_indicator
+            white_ind = config.white_indicator_active
+        elif self.engine.current_player.color == PlayerColor.BLACK:
+            p_colour = "black"
+            black_ind = config.black_indicator_active
+            white_ind = config.white_indicator
+        text = 'Player ' + p_colour +  ' turn'
         screen.blit(
             config.turn_indicator_font.render(text, True, config.ui_colors.black),
             config.turn_indicator_pos
         )
+        screen.blit(black_ind, config.black_indicator_pos)
+        screen.blit(white_ind, config.white_indicator_pos)
+
+        # draw opponent information
+        currMana = self.engine.waiting_player.turn_mana
+        maxMana = self.engine.waiting_player.max_mana
+        text = "opponent's mana: " + "{}/{}".format(currMana, maxMana)
+        screen.blit(
+            config.opponent_mana_font.render(text, True, config.ui_colors.black),
+            config.opponent_mana_pos
+        )
+
+        text = "opponent's hand: " + str(len(self.engine.waiting_player.hand))
+        screen.blit(
+            config.opponent_hand_font.render(text, True, config.ui_colors.black),
+            config.opponent_hand_pos
+        )
+
 
     # render sprites that doesnt need to move
     def render_ui_sprite(self, screen):
