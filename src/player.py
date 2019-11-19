@@ -50,10 +50,11 @@ class Player(object):
     def draw_card(self):
         if len(self.hand) > config.HAND_SIZE:
             raise IllegalPlayerActionError("Hand full")
-        card = random.choice(self.deck)
-        self.deck.remove(card)
-        self.hand.append(card)
-        return card
+        if not len(self.deck) == 0:
+            card = random.choice(self.deck)
+            self.deck.remove(card)
+            self.hand.append(card)
+            return card
 
     @property
     def turn_mana(self):

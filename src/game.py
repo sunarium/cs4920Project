@@ -2,11 +2,11 @@ import pygame
 pygame.init()
 import sys
 from src import config
-from src.gamestates import GameState, state_list
+from src.gamestates import MainMenu, GameState
 
 class Game:
     def __init__(self):
-        self.this_state: GameState = state_list['main_menu']()
+        self.this_state: GameState = MainMenu()
         self.screen = pygame.display.set_mode(config.screen_resolution)
         pygame.display.set_caption(config.window_title)
         pygame.display.set_icon(config.window_icon)

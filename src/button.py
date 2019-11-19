@@ -27,7 +27,6 @@ class Button:
             help_rect.centery = self.rect.centery - self.help_text_offset
             screen.blit(help_text, help_rect)
 
-
     def on_click(self):
         if self.next_state:
             self.owner.set_next_state(self.next_state)

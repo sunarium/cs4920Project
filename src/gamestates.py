@@ -30,7 +30,6 @@ class GameState(ABC):
                 for b in self.buttons:
                     if b.activated: b.on_click()
 
-
     def set_next_state(self, next_state:str):
         self.next_state = state_list[next_state]()
 
@@ -154,25 +153,21 @@ class LocalGame(GameState):
                 pass
         elif self.picked_card:
             try:
-                "this"
                 self.engine.play_card(self.picked_card, piece_pos)
                 self.picked_card = None
             except:
-                print("this")
                 pass
         elif not self.picked_piece:
             self.picked_piece = self.engine.grab_piece(piece_pos)
 
     def on_click_hand(self, mouse_pos):
         hand_pos = (mouse_pos[0] - config.hand_start_pos[0] - self.hand_xoffset) // (config.card_size[0] + config.hand_margin)
-        print(hand_pos)
         if not self.picked_card and hand_pos >= 0:
             self.picked_card = hand_pos
         pass
 
     def on_click_mana_pile(self):
         if self.picked_card is not None:
-            print("qwer")
             self.engine.place_to_mana_pile(self.picked_card)
             self.picked_card = None
 
@@ -358,7 +353,6 @@ class JoinGame(GameState):
         screen.blit(input_ip, input_rect)
 
         # render error message if any
-        print(self.status_text)
         status = config.connect.status_font.render(self.status_text, True, config.connect.status_color)
         status_rect = status.get_rect()
         status_rect.center = config.connect.status_center

@@ -72,7 +72,6 @@ class GameEngine(object):
             self.board.pieces.append(Piece('rook',  (0, 0), PlayerColor.WHITE, self.board))
             self.board.pieces.append(Piece('knight', (1, 0), PlayerColor.WHITE, self.board))
             self.board.pieces.append(Piece('bishop', (2, 0), PlayerColor.WHITE, self.board))
-            print(self.board.pieces)
 
         # initialize the game
         self.current_player.on_turn_start()
@@ -181,6 +180,7 @@ class GameEngine(object):
             return piece
 
     def turn_switch(self):
+        self.phase = GamePhase.MAIN
         self.board.on_turn_change()
         self.current_player.on_turn_end()
         self.has_placed_to_mana = False
