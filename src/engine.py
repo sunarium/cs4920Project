@@ -206,6 +206,7 @@ class NetworkGameEngine:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.queue = queue.Queue()
         self.is_my_turn: bool = False
+        self.exiting = False
 
     def reset(self):
         self.socket.close()
@@ -240,18 +241,29 @@ class NetworkGameEngine:
             self.network_status = NetworkStatus.ERROR
             self.error_message = e.args[0]
 
-
     def _await_handshake(self):
-        self.socket.bind(('', config.DEFAULT_PORT))
-        self.socket.listen(1)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(('', config.DEFAULT_PORT))
+        s.setblocking(False)
+        s.listen(1)
         while True:
-            _sock, addr = self.socket.accept()
+            try:
+                _sock, addr = s.accept()
+            except BlockingIOError:
+                if not self.exiting:
+                    continue
+                else:
+                    s.close()
+                    print('quiting')
+                    quit()
+            else:
+                _sock.setblocking(True)
             if _sock.recv(1024).strip() == config.CLIENT_REQUEST:
                 print(f'got valid conn from {addr}')
                 break
             else:
                 _sock.close()
-        self.socket.close()
+        s.close()
         self.socket = _sock
         self.socket.send(config.SERVER_RESPONSE)
         self.network_status = NetworkStatus.CONNECTED
@@ -269,6 +281,9 @@ class NetworkGameEngine:
     def get_network_status(self):
         return self.network_status
 
+    def __del__(self):
+        self.socket.close()
+
     # ↑ handshake code
     ##############################################################################
     # ↓ game running code
@@ -284,9 +299,7 @@ class NetworkGameEngine:
             self.queue.put_nowait(msg.decode('ascii'))
 
     def on_game_start(self):
-        # todo: init game?
         threading.Thread(target=self.listener).start()
-        pass
 
     def on_game_tick(self):
         if not self.queue.empty():

@@ -79,7 +79,8 @@ class MainMenu(GameState):
             Button(self, config.buttons['quit']),
             Button(self, config.buttons['show_credits']),
             Button(self, config.buttons['start_local']),
-            Button(self, config.buttons['join_online'])
+            Button(self, config.buttons['join_online']),
+            Button(self, config.buttons['host_online'])
         ]
 
     def render(self, screen:pygame.Surface):
@@ -91,14 +92,21 @@ class MainMenu(GameState):
         self.handle_button(events)
 
 class LocalGame(GameState):
-    def __init__(self):
+    def __init__(self, network_engine=None):
         super().__init__()
-        self.engine = GameEngine(debug=False)
         self.buttons = [
             Button(self, config.buttons['back_to_main_ingame']),
-            Button(self, config.buttons['next_phase'], on_click_callback=self.engine.phase_change),
-            Button(self, config.buttons['next_turn'], on_click_callback=self.engine.turn_switch),
+            Button(self, config.buttons['next_phase'], on_click_callback=self.phase_change),
+            Button(self, config.buttons['next_turn'], on_click_callback=self.turn_change),
         ]
+        # game engine
+        if network_engine:
+            self.network_engine:NetworkGameEngine = network_engine
+            self.engine = network_engine.engine
+            self.is_my_turn = self.network_engine.is_my_turn
+        else:
+            self.engine = GameEngine(debug=True)
+
         # player interaction
         self.picked_piece = None
         self.hand_xoffset = 0
@@ -110,11 +118,15 @@ class LocalGame(GameState):
         self.picked_card = None
 
         # debug
-        # i moved these to engine.__init__() --Henry
+    def phase_change(self):
+        self.engine.phase_change()
+
+    def turn_change(self):
+        self.engine.turn_switch()
 
     def handle_event(self, events:List[pygame.event.Event]):
         # todo if game over, stop handling all mouse interaction except quit button
-        # todo handle mouse click on card/piece/board/buttons
+        # todo if not my turn, do not handle events
         self.handle_button(events)
         for e in events:
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == pygame.BUTTON_LEFT:
@@ -129,7 +141,6 @@ class LocalGame(GameState):
                     self.on_click_mana_pile()
             # drag motion for dragging hand
             elif e.type == pygame.MOUSEMOTION and e.buttons[0] and self.drag:
-                #print("motion")
                 posX, posY = e.pos
                 self.hand_xoffset = self.start_offset + posX
                 self.picked_card = None
@@ -308,11 +319,48 @@ class LocalGame(GameState):
         mouse_pos /= config.piece_size
         return mouse_pos
 
-class NetworkedGame(LocalGame):
-    def __init__(self, network_engine:NetworkGameEngine):
+class HostGame(GameState):
+    def __init__(self):
         super().__init__()
-        self.network_engine = network_engine
-        self.engine = network_engine.engine
+        self.buttons = [Button(self, config.buttons['back_to_main'], on_click_callback=self.on_exit)]
+        self.network_engine = NetworkGameEngine(debug=True)
+        self.local_ip = self.get_local_ip()
+        self.network_engine.host_game()
+
+    def on_exit(self):
+        if self.network_engine.exiting:
+            self.network_engine.exiting = True
+        self.network_engine.socket.close()
+
+    def get_local_ip(self) -> str:
+        # from https://stackoverflow.com/a/28950776
+        import socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # doesn't even have to be reachable
+            s.connect(('10.255.255.255', 1))
+            IP = s.getsockname()[0]
+        except:
+            IP = '127.0.0.1'
+        finally:
+            s.close()
+        return IP
+
+    def render(self, screen:pygame.Surface):
+        screen.fill(config.ui_colors.goldenrod)
+        # buttons
+        for b in self.buttons:
+            b.render(screen)
+        # render status text
+        prompt = config.host.prompt_font.render(config.host.prompt_text, True, config.host.prompt_color)
+        prompt_rect = prompt.get_rect()
+        prompt_rect.center = config.host.prompt_center
+        screen.blit(prompt, prompt_rect)
+
+    def handle_event(self, events:List[pygame.event.Event]):
+        self.handle_button(events)
+        if self.network_engine.network_status == NetworkStatus.CONNECTED:
+            self.set_next_state('main_menu')
 
 class JoinGame(GameState):
     def __init__(self):
@@ -381,11 +429,6 @@ class JoinGame(GameState):
 
         if self.network_engine.network_status == NetworkStatus.CONNECTED:
             self.next_state = LocalGame()
-
-
-class HostGame(GameState):
-    pass
-
 
 state_list = {
     'main_menu': MainMenu,

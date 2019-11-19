@@ -113,6 +113,14 @@ connect.status_color = ui_colors.red
 connect.status_center = (600, 350)
 connect.delete_frame_interval = 10 # if user held down backspace, pop one char every X frame
 
+host = SimpleNamespace()
+host.prompt_text = "Awaiting connection..."
+host.prompt_center = (600, 200)
+host.prompt_color = ui_colors.black
+host.prompt_font = ui_fonts.m
+
+
+
 # buttons
 buttons = {
     'default': {
@@ -153,8 +161,8 @@ buttons = {
         'text': 'host game',
         'left': 500,
         'top': 200,
-        'color': ui_colors.blue,
-        'active_color': ui_colors.light_blue,
+        'color': ui_colors.red,
+        'active_color': ui_colors.light_red,
         'help_text': 'Host online game',
         'next_state': 'host_game'
     },
