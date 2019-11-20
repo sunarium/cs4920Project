@@ -156,6 +156,9 @@ class LocalGame(GameState):
             elif e.type == pygame.MOUSEBUTTONDOWN and e.button == pygame.BUTTON_RIGHT:
                 self.picked_piece = None
                 self.picked_card = None
+            elif e.type == pygame.KEYDOWN and e.unicode == 'k':
+                # for debugging, dont delete!
+                print("a")
 
     def on_click_board(self, mouse_pos):
         piece_pos = (V2(mouse_pos) - config.board_pos) // config.piece_size[0]
@@ -169,7 +172,7 @@ class LocalGame(GameState):
                 print(e)
                 # todo we could play a sound here
                 pass
-        elif self.picked_card:
+        elif self.picked_card is not None:
             try:
                 self.engine.play_card(self.picked_card, piece_pos)
                 self.picked_card = None
@@ -180,7 +183,7 @@ class LocalGame(GameState):
 
     def on_click_hand(self, mouse_pos):
         hand_pos = (mouse_pos[0] - config.hand_start_pos[0] - self.hand_xoffset) // (config.card_size[0] + config.hand_margin)
-        if not self.picked_card and hand_pos >= 0:
+        if self.picked_card is None and hand_pos >= 0:
             self.picked_card = hand_pos
         pass
 

@@ -69,9 +69,9 @@ class GameEngine(object):
         if debug:
             print('WARNING DEBUG MODE')
             self.phase = 0
-            self.board.pieces.append(Piece('rook',  (0, 0), PlayerColor.WHITE, self.board))
-            self.board.pieces.append(Piece('knight', (1, 0), PlayerColor.WHITE, self.board))
-            self.board.pieces.append(Piece('bishop', (2, 0), PlayerColor.WHITE, self.board))
+            Piece('rook',  (0, 0), PlayerColor.WHITE, self.board)
+            Piece('knight', (1, 0), PlayerColor.WHITE, self.board)
+            Piece('bishop', (2, 0), PlayerColor.WHITE, self.board)
 
         # initialize the game
         self.current_player.on_turn_start()
@@ -154,7 +154,7 @@ class GameEngine(object):
     #   - new pos is invalid
     def move_piece(self, piece: Piece, new_pos: Union[Vector2, Tuple[int, int]]):
         # check movement legality
-        if new_pos not in piece.get_legal_moves(self.board) or piece.newly_placed:
+        if (new_pos not in piece.get_legal_moves(self.board) or piece.newly_placed) and not self.debug:
             raise IllegalPlayerActionError("cant move there")
 
         # enemy piece capturing
@@ -167,7 +167,7 @@ class GameEngine(object):
 
         # if king is captured, player made this move wins
         if captured_piece and captured_piece.name == 'king':
-            self.winner = self.determine_winnder()
+            self.winner = self.determine_winner()
             self.game_ended = True
 
     def determine_winner(self):
