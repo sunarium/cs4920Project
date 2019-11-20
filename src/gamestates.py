@@ -117,8 +117,9 @@ class LocalGame(GameState):
 
 
     def handle_event(self, events:List[pygame.event.Event]):
-        # todo if game over, stop handling all mouse interaction except quit button
-        # todo handle mouse click on card/piece/board/buttons
+
+        
+        # handle right click for cancel actions
         self.handle_button(events)
         for e in events:
             if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
