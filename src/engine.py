@@ -57,9 +57,6 @@ class GameEngine(object):
             self.current_player.draw_card()
             self.waiting_player.draw_card()
 
-        Piece("king", Vector2(4, 7), -1, self.board)
-        Piece("king", Vector2(4, 0), 1, self.board)
-
         # for display
         self.newly_drawn = None
 
@@ -75,11 +72,12 @@ class GameEngine(object):
             self.board.pieces.append(Piece('rook',  (0, 0), PlayerColor.WHITE, self.board))
             self.board.pieces.append(Piece('knight', (1, 0), PlayerColor.WHITE, self.board))
             self.board.pieces.append(Piece('bishop', (2, 0), PlayerColor.WHITE, self.board))
-            print(self.board.pieces)
 
         # initialize the game
         self.current_player.on_turn_start()
-
+        Piece("king", Vector2(4, 7), -1, self.board)
+        Piece("king", Vector2(4, 0), 1, self.board)
+        self.board.on_turn_change()
 
     def debug_dump(self):
         if not self.debug:
@@ -182,6 +180,7 @@ class GameEngine(object):
             return piece
 
     def turn_switch(self):
+        self.phase = GamePhase.MAIN
         self.board.on_turn_change()
         self.current_player.on_turn_end()
         self.has_placed_to_mana = False
@@ -205,7 +204,15 @@ class NetworkGameEngine:
         self.error_message = ''
         self.network_status = NetworkStatus.INITIALIZED
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # self.is_my_turn: bool = False
+        self.queue = queue.Queue()
+        self.is_my_turn: bool = False
+        self.exiting = False
+
+    def reset(self):
+        self.socket.close()
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.network_status = NetworkStatus.INITIALIZED
+        self.error_message = ''
 
     def _handshake(self, addr):
         try:
@@ -229,29 +236,37 @@ class NetworkGameEngine:
                 raise NetworkError('server response do not match')
             self.network_status = NetworkStatus.CONNECTED
             self.socket.settimeout(0)  # disable timeout
-            self.socket.setblocking(False)
             print('client: server connected')
         except NetworkError as e:
             self.network_status = NetworkStatus.ERROR
             self.error_message = e.args[0]
-            self.socket.close()
-            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def _await_handshake(self):
-        self.socket.bind(('', config.DEFAULT_PORT))
-        self.socket.listen(1)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(('', config.DEFAULT_PORT))
+        s.setblocking(False)
+        s.listen(1)
         while True:
-            _sock, addr = self.socket.accept()
+            try:
+                _sock, addr = s.accept()
+            except BlockingIOError:
+                if not self.exiting:
+                    continue
+                else:
+                    s.close()
+                    print('quiting')
+                    quit()
+            else:
+                _sock.setblocking(True)
             if _sock.recv(1024).strip() == config.CLIENT_REQUEST:
                 print(f'got valid conn from {addr}')
                 break
             else:
                 _sock.close()
-        self.socket.close()
+        s.close()
         self.socket = _sock
         self.socket.send(config.SERVER_RESPONSE)
         self.network_status = NetworkStatus.CONNECTED
-        self.socket.setblocking(False)
         print('server: client connected')
 
     # called if run as client
@@ -266,18 +281,41 @@ class NetworkGameEngine:
     def get_network_status(self):
         return self.network_status
 
-    def check_opponent_move(self):
-        try:
-            opponent_move = self.socket.recv(1024)
-            if opponent_move == b'':  # todo: discuss with gui team on how to handle this.
-                self.network_status = NetworkStatus.ERROR
-                self.error_message = 'socket closed'
-                return
-        except (socket.error, BlockingIOError):
-            pass
+    def __del__(self):
+        self.socket.close()
 
-        # todo: handle opponent move
-        pass
+    # ↑ handshake code
+    ##############################################################################
+    # ↓ game running code
+
+    def listener(self):
+        assert self.network_status == NetworkStatus.CONNECTED
+        while not self.engine.game_ended:
+            # todo: add check for closed socket
+            msg = self.socket.recv(1024)
+            assert msg.startswith(b'<')
+            while not msg.endswith(b'>'):
+                msg += self.socket.recv(1024)
+            self.queue.put_nowait(msg.decode('ascii'))
 
     def on_game_start(self):
+        threading.Thread(target=self.listener).start()
+
+    def on_game_tick(self):
+        if not self.queue.empty():
+            raw_msg = self.queue.get_nowait()
+            # todo: translate message to function calls to `self.engine`
+            msg = raw_msg.strip('<>').split('|')
+            if msg[0] == 'PlacedMana':
+                pass
+            elif msg[0] == 'PlacedPiece':
+                pass
+            elif msg[0] == 'MovedPiece':
+                pass
+            elif msg[0] == 'NextPhase':
+                pass
+            elif msg[0] == 'NextTurn':
+                pass
+            print(raw_msg)
+            print(msg)
         pass
