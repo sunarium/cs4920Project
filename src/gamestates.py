@@ -112,6 +112,7 @@ class LocalGame(GameState):
         self.drag = False
         # visual clues
         self.legal_positions = None
+        self.legal_starts = None
         self.start_offset = 0
         self.picked_card = None
 
@@ -209,6 +210,14 @@ class LocalGame(GameState):
                 surf = pygame.Surface(config.piece_size, pygame.SRCALPHA)
                 surf.fill(config.ui_colors.legal_pos)
                 screen.blit(surf, V2(config.board_pos) + (legal_pos.elementwise() * config.piece_size))
+
+        if self.picked_card:
+            self.legal_starts = self.engine.valid_positions(self.picked_card)
+            for legal_pos in self.legal_starts:
+                surf = pygame.Surface(config.piece_size, pygame.SRCALPHA)
+                surf.fill(config.ui_colors.legal_pos)
+                screen.blit(surf, V2(config.board_pos) + (legal_pos.elementwise() * config.piece_size))
+
 
 
         # draw pieces
