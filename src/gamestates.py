@@ -255,6 +255,13 @@ class LocalGame(GameState):
             config.mana_text_pos
         )
 
+        #draw error reminder
+        text = 'Reminder:' + self.engine.error_message 
+        screen.blit(
+            config.ui_fonts.s.render(text, True, config.ui_colors.black),
+            config.error_reminder
+        )
+
         #  draw phase indicator
         if self.engine.phase == 0:
             text = "Main Phase"
@@ -262,7 +269,7 @@ class LocalGame(GameState):
             text = "Action Phase"
         elif self.engine.phase == 2:
             text = "Second Main"
-
+        
         screen.blit(
             config.ui_fonts.s.render(text, True, config.ui_colors.black),
             config.phase_text_pos

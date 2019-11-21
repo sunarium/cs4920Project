@@ -271,6 +271,7 @@ opponent_mana_font = ui_fonts.xs
 opponent_hand_pos = (970, 225)
 opponent_hand_font = ui_fonts.xs
 phase_text_pos = (910, 555)
+error_reminder = (950,300)
 # hand drawing shenanigans
 hand_draw_area = pygame.Rect((0, 661), (901, 240))
 
