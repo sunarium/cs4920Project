@@ -32,7 +32,8 @@ class Player(object):
 
     def _init_deck(self):
         for card_name, amount in config.DECK_AMOUNT.items():
-            self.deck += [PieceCard(card_name, self.color)] * amount
+            for count in range (0,amount):
+                self.deck.append(PieceCard(card_name, self.color))
         random.shuffle(self.deck)
 
     def on_turn_end(self):
@@ -92,9 +93,9 @@ class Player(object):
                 c.tapped = True
                 tapped += 1
             if tapped == cost:
+
                 break
 
         # play the card
-        print('played card at', index)
         self.hand.remove(card)
         card.played(board, target)

@@ -75,8 +75,8 @@ class GameEngine(object):
 
         # initialize the game
         self.current_player.on_turn_start()
-        Piece("king", Vector2(4, 7), -1, self.board)
-        Piece("king", Vector2(4, 0), 1, self.board)
+        Piece("king", Vector2(4, 7), -1, self.board).newly_placed = False
+        Piece("king", Vector2(4, 0), 1, self.board).newly_placed = False
         self.board.on_turn_change()
 
     def debug_dump(self):
