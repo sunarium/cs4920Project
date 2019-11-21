@@ -343,9 +343,9 @@ class NetworkGameEngine(GameEngine):
                 self.waiting_player.play_card(int(msg[1]), (int(msg[2]), int(msg[3])), self.board) # broken
             elif msg[0] == 'MovedPiece':
                 # fixme:board in client is weird?
-                # uncomment these two lines to see
-                # for p in self.board.pieces:
-                #     print(p.pos, p.owner, p.name)
+                #uncomment these two lines to see
+                for p in self.board.pieces:
+                    print(p.pos, p.owner, p.name)
                 old_pos = Vector2(msg[2], msg[3])
                 piece = self.board.get_piece(old_pos)
                 assert piece # fixme:replace this with error checking after testing

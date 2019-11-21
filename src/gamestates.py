@@ -215,7 +215,7 @@ class LocalGame(GameState):
                 surf.fill(config.ui_colors.legal_pos)
                 screen.blit(surf, V2(config.board_pos) + (legal_pos.elementwise() * config.piece_size))
 
-        if self.picked_card:
+        if self.picked_card is not None:
             self.legal_starts = self.engine.valid_positions(self.picked_card)
             for legal_pos in self.legal_starts:
                 surf = pygame.Surface(config.piece_size, pygame.SRCALPHA)
@@ -346,7 +346,7 @@ class HostGame(GameState):
     def __init__(self):
         super().__init__()
         self.buttons = [Button(self, config.buttons['back_to_main'], on_click_callback=self.on_exit)]
-        self.network_engine = NetworkGameEngine(debug=True, is_host=True)
+        self.network_engine = NetworkGameEngine(debug=False, is_host=True)
         self.local_ip = self.get_local_ip()
         self.network_engine.host_game()
 
@@ -389,7 +389,7 @@ class HostGame(GameState):
 class JoinGame(GameState):
     def __init__(self):
         super().__init__()
-        self.network_engine = NetworkGameEngine(debug=True, is_host=False)
+        self.network_engine = NetworkGameEngine(debug=False, is_host=False)
         self.buttons = [
             Button(self, config.buttons['back_to_main'], on_click_callback=self.on_leave),
             Button(self, config.buttons['connect'], on_click_callback=self.connect_to)
