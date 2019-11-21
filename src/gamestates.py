@@ -203,6 +203,16 @@ class LocalGame(GameState):
         for b in self.buttons:
             b.render(screen)
 
+        # draw hand
+        location = V2(config.hand_start_pos)
+        location.x += self.hand_xoffset
+        screen.set_clip(config.hand_draw_area)
+        for c in self.engine.get_curr_hand():
+            surf = pygame.image.load(config.assetsroot + c.asset_name())
+            screen.blit(surf, location)
+            location.x += (config.card_size[0] + config.hand_margin)
+        screen.set_clip(None)
+
         # draw visual clues
         if self.picked_piece and self.legal_positions:
             for legal_pos in self.legal_positions:
@@ -219,6 +229,13 @@ class LocalGame(GameState):
                 surf = pygame.Surface(config.piece_size, pygame.SRCALPHA)
                 surf.fill(config.ui_colors.legal_pos)
                 screen.blit(surf, V2(config.board_pos) + (legal_pos.elementwise() * config.piece_size))
+            surf = pygame.Surface(config.card_size, pygame.SRCALPHA)
+            surf.fill(config.ui_colors.legal_pos)
+            pickedLoc = V2(config.hand_start_pos)
+            pickedLoc.x += self.hand_xoffset
+            for x in range (0,self.picked_card):
+                pickedLoc.x += (config.card_size[0] + config.hand_margin)
+            screen.blit(surf, pickedLoc)
 
 
 
@@ -233,16 +250,6 @@ class LocalGame(GameState):
             assetfile = p.asset_name()
             surf = pygame.image.load(config.assetsroot+assetfile)
             screen.blit(surf, location)
-
-        # draw hand
-        location = V2(config.hand_start_pos)
-        location.x += self.hand_xoffset
-        screen.set_clip(config.hand_draw_area)
-        for c in self.engine.get_curr_hand():
-            surf = pygame.image.load(config.assetsroot+c.asset_name())
-            screen.blit(surf, location)
-            location.x += (config.card_size[0] + config.hand_margin)
-        screen.set_clip(None)
 
         # draw deck size
         text = "{}/50".format(self.engine.get_curr_deck_size())
