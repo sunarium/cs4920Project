@@ -15,20 +15,20 @@ DECK_AMOUNT = {
 }
 HAND_SIZE = 99999
 # costs of deploying each pieces
-# MANA_COST = {
-#     'pawn': 1,
-#     'bishop': 3,
-#     'knight': 3,
-#     'rook': 5,
-#     'queen': 10
-# }
 MANA_COST = {
+     'pawn': 1,
+     'bishop': 3,
+     'knight': 3,
+     'rook': 5,
+     'queen': 10
+}
+"""MANA_COST = {
     'pawn': 1,
     'bishop': 1,
     'knight': 1,
     'rook': 1,
     'queen': 1
-}
+}"""
 # mana avaliable to player initially
 INIT_MANA = 0
 

@@ -119,10 +119,14 @@ class LocalGame(GameState):
         # debug
     def phase_change(self):
         if self.engine.get_is_my_turn():
+            self.picked_card = None
+            self.picked_piece = None
             self.engine.phase_change()
 
     def turn_change(self):
         if self.engine.get_is_my_turn():
+            self.picked_card = None
+            self.picked_piece = None
             self.engine.turn_switch()
 
     def handle_event(self, events:List[pygame.event.Event]):
@@ -184,7 +188,7 @@ class LocalGame(GameState):
 
     def on_click_hand(self, mouse_pos):
         hand_pos = (mouse_pos[0] - config.hand_start_pos[0] - self.hand_xoffset) // (config.card_size[0] + config.hand_margin)
-        if self.picked_card is None and hand_pos >= 0:
+        if self.picked_card is None and hand_pos >= 0 and not self.engine.phase == 1:
             self.picked_card = hand_pos
         pass
 
