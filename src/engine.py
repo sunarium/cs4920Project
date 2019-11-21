@@ -301,25 +301,33 @@ class NetworkGameEngine(GameEngine):
     def get_network_status(self):
         return self.network_status
 
-    def __del__(self):
-        pass
-        self.socket.close()
-
     # ↑ handshake code
     ##############################################################################
     # ↓ game running code
 
     def listener(self):
         assert self.network_status == NetworkStatus.CONNECTED
+        self.socket.settimeout(0.5)
         while not self.game_ended:
             # todo: add check for closed socket
-            msg = self.socket.recv(1024)
-            if self.is_my_turn or msg == b'':
+            try:
+                msg = self.socket.recv(1024)
+            except socket.timeout:
+                if self.game_ended:
+                    break
+                else:
+                    continue
+            if self.is_my_turn:
                 continue
-            assert msg.startswith(b'<') # fixme: drop the assert after testing
+            if msg == b'': # socket closed
+                self.game_ended = True
+            if not msg.startswith(b'<'):
+                print('!!!!' + msg.decode('ascii'))
+                break
             while not msg.endswith(b'>\n'):
                 msg += self.socket.recv(1024)
             self.queue.put_nowait(msg.decode('ascii'))
+        self.socket.close()
         print('listener thread quited')
 
     def on_game_start(self):

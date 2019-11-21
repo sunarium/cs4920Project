@@ -95,7 +95,7 @@ class LocalGame(GameState):
     def __init__(self, engine=None):
         super().__init__()
         self.buttons = [
-            Button(self, config.buttons['back_to_main_ingame']),
+            Button(self, config.buttons['back_to_main_ingame'], on_click_callback=self.on_quit),
             Button(self, config.buttons['next_phase'], on_click_callback=self.phase_change),
             Button(self, config.buttons['next_turn'], on_click_callback=self.turn_change),
         ]
@@ -116,7 +116,9 @@ class LocalGame(GameState):
         self.start_offset = 0
         self.picked_card = None
 
-        # debug
+    def on_quit(self):
+        self.engine.game_ended = True
+
     def phase_change(self):
         if self.engine.get_is_my_turn():
             self.picked_card = None
