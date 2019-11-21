@@ -177,6 +177,7 @@ class GameEngine(object):
 
         # if king is captured, player made this move wins
         if captured_piece and captured_piece.name == 'king':
+            print("trig")
             self.winner = self.determine_winner()
             self.game_ended = True
 
