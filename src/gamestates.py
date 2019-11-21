@@ -103,7 +103,7 @@ class LocalGame(GameState):
         if engine:
             self.engine = engine
         else:
-            self.engine = GameEngine(debug=True)
+            self.engine = GameEngine(debug=False)
 
         # player interaction
         self.picked_piece = None
@@ -112,16 +112,21 @@ class LocalGame(GameState):
         self.drag = False
         # visual clues
         self.legal_positions = None
+        self.legal_starts = None
         self.start_offset = 0
         self.picked_card = None
 
         # debug
     def phase_change(self):
         if self.engine.get_is_my_turn():
+            self.picked_card = None
+            self.picked_piece = None
             self.engine.phase_change()
 
     def turn_change(self):
         if self.engine.get_is_my_turn():
+            self.picked_card = None
+            self.picked_piece = None
             self.engine.turn_switch()
 
     def handle_event(self, events:List[pygame.event.Event]):
@@ -183,7 +188,7 @@ class LocalGame(GameState):
 
     def on_click_hand(self, mouse_pos):
         hand_pos = (mouse_pos[0] - config.hand_start_pos[0] - self.hand_xoffset) // (config.card_size[0] + config.hand_margin)
-        if self.picked_card is None and hand_pos >= 0:
+        if self.picked_card is None and hand_pos >= 0 and not self.engine.phase == 1:
             self.picked_card = hand_pos
         pass
 
@@ -209,6 +214,14 @@ class LocalGame(GameState):
                 surf = pygame.Surface(config.piece_size, pygame.SRCALPHA)
                 surf.fill(config.ui_colors.legal_pos)
                 screen.blit(surf, V2(config.board_pos) + (legal_pos.elementwise() * config.piece_size))
+
+        if self.picked_card is not None:
+            self.legal_starts = self.engine.valid_positions(self.picked_card)
+            for legal_pos in self.legal_starts:
+                surf = pygame.Surface(config.piece_size, pygame.SRCALPHA)
+                surf.fill(config.ui_colors.legal_pos)
+                screen.blit(surf, V2(config.board_pos) + (legal_pos.elementwise() * config.piece_size))
+
 
 
         # draw pieces
@@ -333,7 +346,7 @@ class HostGame(GameState):
     def __init__(self):
         super().__init__()
         self.buttons = [Button(self, config.buttons['back_to_main'], on_click_callback=self.on_exit)]
-        self.network_engine = NetworkGameEngine(debug=True, is_host=True)
+        self.network_engine = NetworkGameEngine(debug=False, is_host=True)
         self.local_ip = self.get_local_ip()
         self.network_engine.host_game()
 
@@ -376,7 +389,7 @@ class HostGame(GameState):
 class JoinGame(GameState):
     def __init__(self):
         super().__init__()
-        self.network_engine = NetworkGameEngine(debug=True, is_host=False)
+        self.network_engine = NetworkGameEngine(debug=False, is_host=False)
         self.buttons = [
             Button(self, config.buttons['back_to_main'], on_click_callback=self.on_leave),
             Button(self, config.buttons['connect'], on_click_callback=self.connect_to)
