@@ -16,12 +16,19 @@ DECK_AMOUNT = {
 HAND_SIZE = 99999
 # costs of deploying each pieces
 MANA_COST = {
-    'pawn': 1,
-    'bishop': 3,
-    'knight': 3,
-    'rook': 5,
-    'queen': 10
+     'pawn': 1,
+     'bishop': 3,
+     'knight': 3,
+     'rook': 5,
+     'queen': 10
 }
+"""MANA_COST = {
+    'pawn': 1,
+    'bishop': 1,
+    'knight': 1,
+    'rook': 1,
+    'queen': 1
+}"""
 # mana avaliable to player initially
 INIT_MANA = 0
 
@@ -248,7 +255,7 @@ buttons = {
 # sizes
 board_size = (600, 600)
 piece_size = (75, 75)
-card_size = (150, 200)
+card_size = (137, 200)
 # positions
 board_pos = (149, 0)
 hand_start_pos = (20, 680)
@@ -278,8 +285,6 @@ hand_draw_area = pygame.Rect((0, 661), (901, 240))
 
 # margin size between cards
 hand_margin = 20
-
-
 
 ############################
 # NETWORKED GAME CONSTANTS #

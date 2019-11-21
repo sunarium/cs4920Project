@@ -6,118 +6,94 @@ from typing import Tuple, Union
 from src import config
 from src.playercolor import PlayerColor
 
+MOVEMENT_VECTOR = {
+    'rook': [
+        (1, 0),
+        (-1, 0),
+        (0, 1),
+        (0, -1)
+    ],
+    'bishop': [
+        (1, 1),
+        (1, -1),
+        (-1, 1),
+        (-1, -1)
+    ],
+    'knight': [
+        (1, 2),
+        (1, -2),
+        (-1, 2),
+        (-1, -2),
+        (2, 1),
+        (2, -1),
+        (-2, 1),
+        (-2, -1),
+    ],
+    'queen': [
+        (1, 0),
+        (-1, 0),
+        (0, 1),
+        (0, -1),
+        (1, 1),
+        (1, -1),
+        (-1, 1),
+        (-1, -1)
+    ],
+    'king': [
+        (1, 0),
+        (-1, 0),
+        (0, 1),
+        (0, -1),
+        (1, 1),
+        (1, -1),
+        (-1, 1),
+        (-1, -1)
+    ]
+}
+
 
 
 class Piece():
-    MOVEMENT_VECTOR = {
-        'rook': [
-            (1, 0),
-            (-1, 0),
-            (0, 1),
-            (0, -1)
-        ],
-        'bishop': [
-            (1, 1),
-            (1, -1),
-            (-1, 1),
-            (-1, -1)
-        ],
-        'knight': [
-            (1, 2),
-            (1, -2),
-            (-1, 2),
-            (-1, -2),
-            (2, 1),
-            (2, -1),
-            (-2, 1),
-            (-2, -1),
-        ],
-        'queen': [
-            (1, 0),
-            (-1, 0),
-            (0, 1),
-            (0, -1),
-            (1, 1),
-            (1, -1),
-            (-1, 1),
-            (-1, -1)
-        ],
-        'king': [
-            (1, 0),
-            (-1, 0),
-            (0, 1),
-            (0, -1),
-            (1, 1),
-            (1, -1),
-            (-1, 1),
-            (-1, -1)
-        ]
-    }
-
-    INITIAL_POSITION = {
-        'pawn': [
-            (0, 1),
-            (1, 1),
-            (2, 1),
-            (3, 1),
-            (4, 1),
-            (5, 1),
-            (6, 1),
-            (7, 1),
-        ],
-        'rook': [
-            (0, 0),
-            (7, 0)
-        ],
-        'knight': [
-            (1, 0),
-            (6, 0)
-        ],
-        'bishop': [
-            (2, 0),
-            (5, 0)
-        ],
-        'queen': (3, 0),
-        'king': (4, 0)
-
-    }
-
     def __init__(self, name: str, pos: Tuple[int, int], owner: PlayerColor, board = None) -> object:
         self.pos:Vector2 = Vector2(pos)
         self.owner = owner
         self.name = name
         if self.name != 'pawn':
-            self._movement_vector = self.MOVEMENT_VECTOR[name]
+            self._movement_vector = MOVEMENT_VECTOR[name]
         self.has_moved = False
         if board:
             self.board = board
             board.add_piece(self)
         self.newly_placed = True
 
+
     def get_legal_moves(self, board=None) -> List[Vector2]:
         if not board:
             board = self.board
+        mlist = []
         if self.name == 'pawn':
-            # fixme: pawn moves and captures in different manner.
-            if self.has_moved:
-                lst = [Vector2(self.pos[0], self.pos[1] + self.owner)]
-            else:
-                lst = [Vector2(self.pos[0], self.pos[1] + self.owner),
-                        Vector2(self.pos[0], self.pos[1] + 2 * self.owner)]
-            return list(filter(self.board.in_board_range, lst))
+            # movement
+            if self.board.get_owner(self.pos + (0, self.owner)) == PlayerColor.EMPTY:
+                mlist.append(self.pos + (0, self.owner))
+            if not self.has_moved and board.get_owner(self.pos+(0, 2*self.owner)) == PlayerColor.EMPTY:
+                mlist.append(self.pos+(0, 2*self.owner))
+            # capture
+            if board.get_owner(self.pos + (1, self.owner)) + self.owner == 0:
+                mlist.append(self.pos + (1, self.owner))
+            if board.get_owner(self.pos + (-1, self.owner)) + self.owner == 0:
+                mlist.append(self.pos + (-1, self.owner))
+            return list(filter(self.board.in_board_range, mlist))
         else:
-            mlist = []
             for v in self._movement_vector:
                 v = Vector2(v)
                 for i in range(1, config.BOARD_SIZE):
                     if self.name in ('king', 'knight') and i > 1: break
-                    if board.in_board_range(self.pos + i * v) and \
-                        board.get_owner(self.pos + i * v) == PlayerColor.EMPTY:
+                    if not board.in_board_range(self.pos + i * v): break
+                    owner = board.get_owner(self.pos + i * v)
+                    if owner == PlayerColor.EMPTY:
                         mlist.append(self.pos + i * v)
-                    else:
-                        if board.in_board_range(self.pos + i * v) and \
-                                board.get_owner(self.pos + i * v) != self.owner:
-                            mlist.append(self.pos + i * v)
+                    elif owner != self.owner:
+                        mlist.append(self.pos + i * v)
                         break
             return mlist
 
@@ -130,9 +106,3 @@ class Piece():
 
     def asset_name(self) -> str:
         return f'piece_{self.name}_{"white" if self.owner == -1 else "black"}.png'
-
-# if __name__ == '__main__':
-#     b = Board()
-#     p = Piece('pawn', (1,3), 1, b)
-#     p1 = Piece('rook', (1,1), 1, b)
-#     p2 = Piece('queen', (0,3), 1, b)

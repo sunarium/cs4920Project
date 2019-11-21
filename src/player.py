@@ -32,7 +32,8 @@ class Player(object):
 
     def _init_deck(self):
         for card_name, amount in config.DECK_AMOUNT.items():
-            self.deck += [PieceCard(card_name, self.color)] * amount
+            for count in range (0,amount):
+                self.deck.append(PieceCard(card_name, self.color))
         random.shuffle(self.deck)
 
     def on_turn_end(self):
@@ -82,7 +83,6 @@ class Player(object):
             raise IllegalCardSelection
 
         cost = config.MANA_COST[card.name]
-        print("cost" + str(cost))
         if self.turn_mana < cost:
             raise IllegalPlayerActionError('Insufficient mana')
         # take mana cost
@@ -93,8 +93,14 @@ class Player(object):
                 c.tapped = True
                 tapped += 1
             if tapped == cost:
+
                 break
 
         # play the card
         self.hand.remove(card)
+        card.played(board, target)
+
+    def pseudo_play_card(self, name, target, board):
+        self.hand.remove(self.hand[0])
+        card = PieceCard(name, self.color)
         card.played(board, target)

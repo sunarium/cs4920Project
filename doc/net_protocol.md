@@ -32,15 +32,17 @@ while not msg.endswith(b'>'):
 
 #### placed card into mana pile:
 
-`b'<PlacedMana|{new mana pool size}>'`
+`b'<PlacedMana|{card_index:int}>'`
+
+`card_index` should be the index in hand
 
 ---
 
-#### played a piece `P` to board position `X`, `Y`
+#### played a card `C` to board position `X`, `Y`
 
-`b'<PlacedPiece|{name:str}|{X:int}|{Y:int}>'`
+`b'<PlacedPiece|{card_index:int}|{X:int}|{Y:int}>'`
 
-`name` should be one of the piece names
+`card_index` should be the index in hand
 
 `X` and `Y` are integers
 
