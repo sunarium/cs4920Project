@@ -99,3 +99,8 @@ class Player(object):
         # play the card
         self.hand.remove(card)
         card.played(board, target)
+
+    def pseudo_play_card(self, name, target, board):
+        self.hand.remove(self.hand[0])
+        card = PieceCard(name, self.color)
+        card.played(board, target)

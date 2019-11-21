@@ -141,6 +141,7 @@ class GameEngine(object):
 
         self.current_player.play_card(card_index, target, self.board)
 
+
     # player places a card into mana pile. this action can only be performed once per turn.
     def place_to_mana_pile(self, card_index: int):
         if not self.phase == GamePhase.MAIN and not self.phase == GamePhase.SECOND_MAIN:
@@ -340,8 +341,8 @@ class NetworkGameEngine(GameEngine):
                 self.waiting_player.place_to_mana_pile(msg[1])
             elif msg[0] == 'PlacedPiece':
                 # fixme:should pass in card name and construct and play the card.
-                print(self.waiting_player.hand)
-                self.waiting_player.play_card(int(msg[1]), (int(msg[2]), int(msg[3])), self.board) # broken
+                #print(self.waiting_player.hand)
+                self.waiting_player.pseudo_play_card((msg[1]), (int(msg[2]), int(msg[3])), self.board)
             elif msg[0] == 'MovedPiece':
                 # fixme:board in client is weird?
                 # uncomment these two lines to see
@@ -398,8 +399,9 @@ class NetworkGameEngine(GameEngine):
         except IllegalPlayerActionError:
             if self.is_my_turn:
                 raise
+        cardName = self.current_player.hand[card_index].name
         if self.is_my_turn:
-            message = f'<PlacedPiece|{card_index}|{target[0]}|{target[1]}>\n'
+            message = f'<PlacedPiece|{cardName}|{target[0]}|{target[1]}>\n'
             self.socket.send(message.encode('ascii'))
 
     def place_to_mana_pile(self, card_index: int):
