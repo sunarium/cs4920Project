@@ -317,19 +317,18 @@ class NetworkGameEngine(GameEngine):
             if self.is_my_turn or msg == b'':
                 continue
             assert msg.startswith(b'<') # fixme: drop the assert after testing
-            while not msg.endswith(b'\n'):
+            while not msg.endswith(b'>\n'):
                 msg += self.socket.recv(1024)
             self.queue.put_nowait(msg.decode('ascii'))
+        print('listener thread quited')
 
     def on_game_start(self):
         self.socket.setblocking(True)
         threading.Thread(target=self.listener).start()
 
-
     def on_game_tick(self):
         if not self.queue.empty():
             raw_msg = self.queue.get_nowait()
-            # todo: translate message to function calls to `self.engine`
             msg = raw_msg.strip().strip('<>').split('|')
             for i, arg in enumerate(msg[1:]):
                 try:
@@ -344,10 +343,6 @@ class NetworkGameEngine(GameEngine):
                 #print(self.waiting_player.hand)
                 self.waiting_player.pseudo_play_card((msg[1]), (int(msg[2]), int(msg[3])), self.board)
             elif msg[0] == 'MovedPiece':
-                # fixme:board in client is weird?
-                # uncomment these two lines to see
-                # for p in self.board.pieces:
-                #     print(p.pos, p.owner, p.name)
                 old_pos = Vector2(msg[1], msg[2])
                 piece = self.board.get_piece(old_pos)
                 assert piece # fixme:replace this with error checking after testing

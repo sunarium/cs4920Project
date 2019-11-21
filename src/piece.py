@@ -66,17 +66,12 @@ class Piece():
             board.add_piece(self)
         self.newly_placed = True
 
-    def get_initial_poses(self):
-        # todo
-        pass
-
 
     def get_legal_moves(self, board=None) -> List[Vector2]:
         if not board:
             board = self.board
         mlist = []
         if self.name == 'pawn':
-            # fixme: pawn moves and captures in different manner.
             # movement
             if self.board.get_owner(self.pos + (0, self.owner)) == PlayerColor.EMPTY:
                 mlist.append(self.pos + (0, self.owner))
