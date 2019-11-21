@@ -121,21 +121,30 @@ class GameEngine(object):
     # Strategy Phase
     # for generating visual clue of where to deploy a new piece.
     def valid_positions(self, card_index: int) -> List[Vector2]:
-
-        pass
+        card = self.current_player.hand[card_index]
+        newList = []
+        for v in card.legal_start():
+            owner = self.board.get_owner(v)
+            if owner == PlayerColor.EMPTY:
+                newList.append(v)
+        return newList
 
     # player playes a card in his hand to target on board.
     # if card is piece card, this action places the piece onto the board.
     # raise exception if illegal index or invalid target or insufficient mana
     def play_card(self, card_index: int, target: Union[Vector2, Tuple[int, int]]):
         if not self.debug and not self.phase == GamePhase.MAIN and not self.phase == GamePhase.SECOND_MAIN:
-            raise IllegalPlayerActionError("you can only play card in main phase")
+            raise IllegalPlayerActionError("you can only play card in main phases")
+
+        if target not in self.valid_positions(card_index):
+            raise IllegalPlayerActionError("cannot place card there")
+
         self.current_player.play_card(card_index, target, self.board)
 
     # player places a card into mana pile. this action can only be performed once per turn.
     def place_to_mana_pile(self, card_index: int):
         if not self.phase == GamePhase.MAIN and not self.phase == GamePhase.SECOND_MAIN:
-            raise IllegalPlayerActionError("you can only place card to mana in main phase")
+            raise IllegalPlayerActionError("you can only place card to mana in main phases")
         if not self.debug and self.has_placed_to_mana:
             raise IllegalPlayerActionError("already placed a card to mana before")
         self.current_player.place_to_mana_pile(card_index)
