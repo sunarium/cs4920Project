@@ -171,8 +171,6 @@ class LocalGame(GameState):
             try:
                 self.engine.move_piece(self.picked_piece, piece_pos)
                 self.picked_piece = None
-                if self.engine.game_ended:
-                    self.set_next_state("main_menu")
             except IllegalPlayerActionError as e:
                 print(e)
                 # todo we could play a sound here
@@ -198,6 +196,8 @@ class LocalGame(GameState):
             self.picked_card = None
 
     def render(self, screen:pygame.Surface):
+        if self.engine.game_ended:
+            self.set_next_state("main_menu")
         # draw game backgrounds
         self.render_ui_sprite(screen)
 
@@ -346,7 +346,7 @@ class HostGame(GameState):
     def __init__(self):
         super().__init__()
         self.buttons = [Button(self, config.buttons['back_to_main'], on_click_callback=self.on_exit)]
-        self.network_engine = NetworkGameEngine(debug=False, is_host=True)
+        self.network_engine = NetworkGameEngine(debug=True, is_host=True)
         self.local_ip = self.get_local_ip()
         self.network_engine.host_game()
 
@@ -389,7 +389,7 @@ class HostGame(GameState):
 class JoinGame(GameState):
     def __init__(self):
         super().__init__()
-        self.network_engine = NetworkGameEngine(debug=False, is_host=False)
+        self.network_engine = NetworkGameEngine(debug=True, is_host=False)
         self.buttons = [
             Button(self, config.buttons['back_to_main'], on_click_callback=self.on_leave),
             Button(self, config.buttons['connect'], on_click_callback=self.connect_to)
