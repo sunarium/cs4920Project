@@ -103,7 +103,7 @@ class LocalGame(GameState):
         if engine:
             self.engine = engine
         else:
-            self.engine = GameEngine(debug=True)
+            self.engine = GameEngine(debug=False)
 
         # player interaction
         self.picked_piece = None
