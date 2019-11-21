@@ -68,20 +68,12 @@ class Player(object):
         return len(self.mana_pile)
 
     def place_to_mana_pile(self, index):
-        try:
-            card = self.hand[index]
-        except IndexError:
-            print(index)
-            raise IllegalCardSelection
+        card = self.hand[index]
         self.hand.remove(card)
         self.mana_pile.append(card)
 
     def play_card(self, index, target, board):
-        try:
-            card = self.hand[index]
-        except IndexError:
-            raise IllegalCardSelection
-
+        card = self.hand[index]
         cost = config.MANA_COST[card.name]
         if self.turn_mana < cost:
             raise IllegalPlayerActionError('Insufficient mana')
@@ -101,6 +93,5 @@ class Player(object):
         card.played(board, target)
 
     def pseudo_play_card(self, name, target, board):
-        self.hand.remove(self.hand[0])
-        card = PieceCard(name, self.color)
-        card.played(board, target)
+        self.hand.pop(0)
+        PieceCard(name, self.color).played(board, target)

@@ -103,13 +103,14 @@ class LocalGame(GameState):
         if engine:
             self.engine = engine
         else:
-            self.engine = GameEngine(debug=False)
+            self.engine = GameEngine(debug=config.debug)
 
         # player interaction
         self.picked_piece = None
         self.hand_xoffset = 0
         self.board_rect = pygame.Rect(config.board_pos, config.board_size)
         self.drag = False
+        self.error_message = ''
         # visual clues
         self.legal_positions = None
         self.legal_starts = None
@@ -117,7 +118,7 @@ class LocalGame(GameState):
         self.picked_card = None
 
     def on_quit(self):
-        self.engine.game_ended = True
+        self.engine.on_quit()
 
     def phase_change(self):
         if self.engine.get_is_my_turn():
@@ -132,9 +133,7 @@ class LocalGame(GameState):
             self.engine.turn_switch()
 
     def handle_event(self, events:List[pygame.event.Event]):
-
         # todo if game over, stop handling all mouse interaction except quit button
-
         self.handle_button(events)
 
         # if not my turn, do not handle events
@@ -142,46 +141,51 @@ class LocalGame(GameState):
             self.engine.on_game_tick()
             return
 
-        for e in events:
-            if e.type == pygame.MOUSEBUTTONDOWN and e.button == pygame.BUTTON_LEFT:
-                if self.board_rect.collidepoint(*e.pos):
-                    self.on_click_board(e.pos)
-                elif config.hand_draw_area.collidepoint(*e.pos):
-                    self.on_click_hand(e.pos)
-                    self.drag = True
+        if self.engine.game_ended:
+            self.set_next_state("main_menu")
+
+        # handle player events
+        # for clearing error message
+        dismiss_error = False
+        try:
+            for e in events:
+                if e.type == pygame.MOUSEBUTTONDOWN and e.button == pygame.BUTTON_LEFT:
+                    if self.board_rect.collidepoint(*e.pos):
+                        self.on_click_board(e.pos)
+                    elif config.hand_draw_area.collidepoint(*e.pos):
+                        self.on_click_hand(e.pos)
+                        self.drag = True
+                        posX, posY = e.pos
+                        self.start_offset = self.hand_xoffset - posX
+                    elif config.mana_zone.collidepoint(*e.pos):
+                        self.on_click_mana_pile()
+                # drag motion for dragging hand
+                elif e.type == pygame.MOUSEMOTION and e.buttons[0] and self.drag:
                     posX, posY = e.pos
-                    self.start_offset = self.hand_xoffset - posX
-                elif config.mana_zone.collidepoint(*e.pos):
-                    self.on_click_mana_pile()
-            # drag motion for dragging hand
-            elif e.type == pygame.MOUSEMOTION and e.buttons[0] and self.drag:
-                posX, posY = e.pos
-                self.hand_xoffset = self.start_offset + posX
-                self.picked_card = None
-                pass
-            elif e.type == pygame.MOUSEBUTTONUP:
-                self.drag = False
-            elif e.type == pygame.MOUSEBUTTONDOWN and e.button == pygame.BUTTON_RIGHT:
-                self.picked_piece = None
-                self.picked_card = None
-            elif e.type == pygame.KEYDOWN and e.unicode == 'k':
-                # for debugging, dont delete!
-                print("a")
+                    self.hand_xoffset = self.start_offset + posX
+                    self.picked_card = None
+                elif e.type == pygame.MOUSEBUTTONUP:
+                    self.drag = False
+                # cancellation
+                elif e.type == pygame.MOUSEBUTTONDOWN and e.button == pygame.BUTTON_RIGHT:
+                    self.picked_piece = None
+                    self.picked_card = None
+                    self.error_message = ''
+                elif e.type == pygame.KEYDOWN and e.unicode == 'k':
+                    # for debugging, dont delete!
+                    print("a")
+        except IllegalPlayerActionError as e:
+            self.error_message = str(e)
+
 
     def on_click_board(self, mouse_pos):
         piece_pos = (V2(mouse_pos) - config.board_pos) // config.piece_size[0]
         if self.picked_piece:
-            try:
-                self.engine.move_piece(self.picked_piece, piece_pos)
-                self.picked_piece = None
-            except IllegalPlayerActionError as e:
-                print(e)
+            self.engine.move_piece(self.picked_piece, piece_pos)
+            self.picked_piece = None
         elif self.picked_card is not None:
-            try:
-                self.engine.play_card(self.picked_card, piece_pos)
-                self.picked_card = None
-            except Exception as e:
-                print(e)
+            self.engine.play_card(self.picked_card, piece_pos)
+            self.picked_card = None
         elif not self.picked_piece:
             self.picked_piece = self.engine.grab_piece(piece_pos)
 
@@ -197,8 +201,6 @@ class LocalGame(GameState):
             self.picked_card = None
 
     def render(self, screen:pygame.Surface):
-        if self.engine.game_ended:
-            self.set_next_state("main_menu")
         # draw game backgrounds
         self.render_ui_sprite(screen)
 
@@ -220,8 +222,6 @@ class LocalGame(GameState):
         if self.picked_piece and self.legal_positions:
             for legal_pos in self.legal_positions:
                 # see https://stackoverflow.com/questions/6339057/draw-a-transparent-rectangle-in-pygame
-                # notice in this case piece still blocks the hint square but since we will eventually
-                # use transparent background piece it should be fine
                 surf = pygame.Surface(config.piece_size, pygame.SRCALPHA)
                 surf.fill(config.ui_colors.legal_pos)
                 screen.blit(surf, V2(config.board_pos) + (legal_pos.elementwise() * config.piece_size))
@@ -239,8 +239,6 @@ class LocalGame(GameState):
             for x in range (0,self.picked_card):
                 pickedLoc.x += (config.card_size[0] + config.hand_margin)
             screen.blit(surf, pickedLoc)
-
-
 
         # draw pieces
         for p in self.engine.board.pieces:
@@ -284,12 +282,23 @@ class LocalGame(GameState):
             config.mana_text_pos
         )
 
-        #draw error reminder
-        text = 'Reminder:' + self.engine.error_message 
-        screen.blit(
-            config.ui_fonts.s.render(text, True, config.ui_colors.black),
-            config.error_reminder
-        )
+        #draw error message
+        if self.error_message != '':
+            error_words = self.error_message.split(' ')
+            space_width = config.error_font.size(' ')[0]
+            x, y = config.error_pos
+            for w in error_words:
+                word_surface = config.error_font.render(w, True, config.error_color)
+                word_width, word_height = word_surface.get_size()
+                if x + word_width >= config.screen_w:
+                    x = config.error_pos[0]  # Reset the x.
+                    y += word_height  # Start on new row.
+                screen.blit(word_surface, (x, y))
+                x += word_width + space_width
+            x = config.error_pos[0]
+            y += word_height
+            word_surface = config.error_font.render('(Right click to dismiss)', True, config.error_color)
+            screen.blit(word_surface, (x, y))
 
         #  draw phase indicator
         if self.engine.phase == 0:
@@ -303,7 +312,6 @@ class LocalGame(GameState):
             config.ui_fonts.s.render(text, True, config.ui_colors.black),
             config.phase_text_pos
         )
-
 
         # draw player indicator
         if (self.engine.current_player.color == PlayerColor.WHITE) ^ (not self.engine.get_is_my_turn()):
@@ -360,14 +368,12 @@ class HostGame(GameState):
     def __init__(self):
         super().__init__()
         self.buttons = [Button(self, config.buttons['back_to_main'], on_click_callback=self.on_exit)]
-        self.network_engine = NetworkGameEngine(debug=True, is_host=True)
+        self.network_engine = NetworkGameEngine(debug=config.debug, is_host=True)
         self.local_ip = self.get_local_ip()
         self.network_engine.host_game()
 
     def on_exit(self):
-        if self.network_engine.exiting:
-            self.network_engine.exiting = True
-        self.network_engine.socket.close()
+        self.network_engine.exiting = True
 
     def get_local_ip(self) -> str:
         # from https://stackoverflow.com/a/28950776
@@ -403,7 +409,7 @@ class HostGame(GameState):
 class JoinGame(GameState):
     def __init__(self):
         super().__init__()
-        self.network_engine = NetworkGameEngine(debug=True, is_host=False)
+        self.network_engine = NetworkGameEngine(debug=config.debug, is_host=False)
         self.buttons = [
             Button(self, config.buttons['back_to_main'], on_click_callback=self.on_leave),
             Button(self, config.buttons['connect'], on_click_callback=self.connect_to)

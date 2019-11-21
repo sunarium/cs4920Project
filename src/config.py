@@ -5,6 +5,8 @@ pygame.init()
 ######################
 # GAMEPLAY CONSTANTS #
 ######################
+debug = False
+
 PIECES = ['pawn', 'rook', 'bishop', 'knight', 'queen']
 DECK_AMOUNT = {
     'pawn': 23,
@@ -278,8 +280,10 @@ opponent_mana_font = ui_fonts.xs
 opponent_hand_pos = (970, 225)
 opponent_hand_font = ui_fonts.xs
 phase_text_pos = (910, 555)
-error_reminder = (950,300)
-# hand drawing shenanigans
+error_pos = (910, 430)
+error_font = ui_fonts.xs
+error_color = ui_colors.red
+
 hand_draw_area = pygame.Rect((0, 661), (901, 240))
 
 

@@ -77,7 +77,6 @@ class Card(object):
         sList = []
         for v in self.startPos:
             v = Vector2(v)
-            print(v.x)
             sList.append(v)
         return sList
 

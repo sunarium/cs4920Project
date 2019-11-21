@@ -20,7 +20,7 @@ class Board(object):
 
     def add_piece(self, piece):
         if self.get_piece(piece.pos):
-            raise IllegalPiecePosError
+            raise AttributeError(f"{piece.pos} is occupied")
         self.pieces.append(piece)
 
     def remove_at(self, pos:Union[Vector2, Tuple]):

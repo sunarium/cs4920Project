@@ -45,7 +45,6 @@ class GameEngine(object):
         # game ends when a player loses his king
         self.game_ended = False
         self.winner = None
-        self.error_message = ' '
 
         # white goes first as per chess tradition
         self.current_player = Player(first_player)
@@ -132,26 +131,18 @@ class GameEngine(object):
                 newList.append(v)
         return newList
 
-    
-
     # player playes a card in his hand to target on board.
     # if card is piece card, this action places the piece onto the board.
     # raise exception if illegal index or invalid target or insufficient mana
     def play_card(self, card_index: int, target: Union[Vector2, Tuple[int, int]]):
-        try:
-            assert(self.debug and not self.phase == GamePhase.MAIN and not self.phase == GamePhase.SECOND_MAIN)
-        except:
-            self.error_message = 'you can only play card in main phase\n'
-            pass
-        try:
-            assert(self.debug and self.has_played_card)
-        except:
-            self.error_message = 'already placed a card on board before'
-            pass
-        try:
-            assert(target in self.valid_positions(card_index))
-        except:
-            self.error_message = 'you cannot play card here'
+        if not self.debug:
+            if not self.phase in (GamePhase.MAIN, GamePhase.SECOND_MAIN):
+                raise IllegalPlayerActionError('you can only play card in main phase')
+            elif self.has_played_card:
+                raise IllegalPlayerActionError('already placed a card on board before')
+            elif target not in self.valid_positions(card_index):
+                raise IllegalPlayerActionError('you cannot play card here')
+        self.has_played_card = True
         self.current_player.play_card(card_index, target, self.board)
 
     def text_objects(self, text, font):
@@ -159,18 +150,12 @@ class GameEngine(object):
         return textSurface, textSurface.get_rect()
 
     # player places a card into mana pile. this action can only be performed once per turn.
-    def place_to_mana_pile(self, card_index: int):       
-        try:#if not self.phase == GamePhase.MAIN:
-            assert(self.phase == GamePhase.MAIN and self.phase == GamePhase.SECOND_MAIN)
-        except: 
-            self.error_message = 'you can only place card to mana in main phase\n'
-            pass   
-        try:         
-            assert(self.debug and self.has_placed_to_mana)
-        except:
-            self.error_message = 'already placed a card to mana before\n'
-            pass
-
+    def place_to_mana_pile(self, card_index: int):
+        if not self.debug:
+            if not self.phase in (GamePhase.MAIN, GamePhase.SECOND_MAIN):
+                raise IllegalPlayerActionError('you can only place card to mana in main phase')
+            elif self.has_placed_to_mana:
+                raise IllegalPlayerActionError('already placed a card to mana before')
         self.current_player.place_to_mana_pile(card_index)
         self.has_placed_to_mana = True
 
@@ -179,7 +164,7 @@ class GameEngine(object):
     def valid_movement_targets(self, old_pos) -> List[Vector2]:
         piece = self.board.get_piece(old_pos)
         if not piece:
-            raise IllegalPiecePosError
+            raise AttributeError(f'no piece at {old_pos}')
         return piece.get_legal_moves(self.board)
 
     # player can move a piece once per turn(?)
@@ -189,7 +174,7 @@ class GameEngine(object):
     def move_piece(self, piece: Piece, new_pos: Union[Vector2, Tuple[int, int]]):
         # check movement legality
         if (new_pos not in piece.get_legal_moves(self.board) or piece.newly_placed) and not self.debug:
-            raise IllegalPlayerActionError("cant move there")
+            raise IllegalPlayerActionError('You cant move there')
 
         # enemy piece capturing
         captured_piece = self.board.get_piece(new_pos)
@@ -201,7 +186,6 @@ class GameEngine(object):
 
         # if king is captured, player made this move wins
         if captured_piece and captured_piece.name == 'king':
-            print("trig")
             self.winner = self.determine_winner()
             self.game_ended = True
 
@@ -209,13 +193,19 @@ class GameEngine(object):
         return self.current_player
 
     # if current player can move piece at pos, return piece
-    # otherwise return None
+    # otherwise raise exception
     def grab_piece(self, pos):
-        if not self.debug and (self.has_moved_piece or self.phase != GamePhase.MOVEMENT):
-            return None
+        if not self.debug:
+            if self.phase != GamePhase.MOVEMENT:
+                raise IllegalPlayerActionError('Can only move piece in movement phase')
+            if self.has_moved_piece:
+                raise IllegalPlayerActionError('You can only move piece once per turn')
         piece = self.board.get_piece(pos)
-        if piece and piece.owner == self.current_player.color and not piece.newly_placed:
-            return piece
+        if piece:
+            if piece.owner == self.current_player.color and not piece.newly_placed:
+                return piece
+            else:
+                raise IllegalPlayerActionError('You cannot move that piece')
 
     def turn_switch(self):
         self.phase = GamePhase.MAIN
@@ -223,6 +213,7 @@ class GameEngine(object):
         self.current_player.on_turn_end()
         self.has_placed_to_mana = False
         self.has_moved_piece = False
+        self.has_played_card = False
         self.current_player, self.waiting_player = self.waiting_player, self.current_player
         self.current_player.on_turn_start()
         # self.newly_drawn = self.current_player.draw_card()
@@ -237,6 +228,9 @@ class GameEngine(object):
 
     def get_is_my_turn(self):
         return True
+
+    def on_quit(self):
+        pass
 
 
 class NetworkGameEngine(GameEngine):
@@ -255,6 +249,9 @@ class NetworkGameEngine(GameEngine):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.network_status = NetworkStatus.INITIALIZED
         self.error_message = ''
+
+    def on_quit(self):
+        self.game_ended = True
 
     def _handshake(self, addr):
         try:
@@ -277,7 +274,7 @@ class NetworkGameEngine(GameEngine):
             if msg.strip() != config.SERVER_RESPONSE:
                 raise NetworkError('server response do not match')
             self.network_status = NetworkStatus.CONNECTED
-            self.socket.settimeout(0)  # disable timeout
+            self.socket.settimeout(0)
             print('client: server connected')
         except NetworkError as e:
             self.network_status = NetworkStatus.ERROR
@@ -292,19 +289,15 @@ class NetworkGameEngine(GameEngine):
             try:
                 _sock, addr = s.accept()
             except BlockingIOError:
-                if not self.exiting:
-                    continue
-                else:
+                if self.exiting:
                     s.close()
-                    print('quiting')
                     quit()
             else:
-                _sock.setblocking(True)
-            if _sock.recv(1024).strip() == config.CLIENT_REQUEST:
-                print(f'got valid conn from {addr}')
-                break
-            else:
-                _sock.close()
+                if _sock.recv(1024).strip() == config.CLIENT_REQUEST:
+                    print(f'got valid conn from {addr}')
+                    break
+                else:
+                    _sock.close()
         s.close()
         self.socket = _sock
         self.socket.setblocking(True)
@@ -344,7 +337,8 @@ class NetworkGameEngine(GameEngine):
                 continue
             if msg == b'': # socket closed
                 self.game_ended = True
-            if not msg.startswith(b'<'):
+                break
+            elif not msg.startswith(b'<'):
                 print('!!!!' + msg.decode('ascii'))
                 break
             while not msg.endswith(b'>\n'):
@@ -366,7 +360,6 @@ class NetworkGameEngine(GameEngine):
                     msg[i+1] = int(float(arg))
                 except ValueError:
                     pass
-
             if msg[0] == 'PlacedMana':
                 self.waiting_player.place_to_mana_pile(msg[1])
             elif msg[0] == 'PlacedPiece':
@@ -382,6 +375,9 @@ class NetworkGameEngine(GameEngine):
                 self.phase_change()
             elif msg[0] == 'NextTurn':
                 self.turn_switch()
+            elif msg == 'endgame':
+                self.game_ended = True
+
             else:
                 print('!!!!'+ raw_msg)
         pass
