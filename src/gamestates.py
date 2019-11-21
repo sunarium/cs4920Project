@@ -135,7 +135,7 @@ class LocalGame(GameState):
         self.handle_button(events)
 
         # if not my turn, do not handle events
-        if not self.engine.get_is_my_turn(): # todo need testing
+        if not self.engine.get_is_my_turn():
             self.engine.on_game_tick()
             return
 
@@ -175,8 +175,6 @@ class LocalGame(GameState):
                     self.set_next_state("main_menu")
             except IllegalPlayerActionError as e:
                 print(e)
-                # todo we could play a sound here
-                pass
         elif self.picked_card is not None:
             try:
                 self.engine.play_card(self.picked_card, piece_pos)
@@ -241,7 +239,6 @@ class LocalGame(GameState):
         location.x += self.hand_xoffset
         screen.set_clip(config.hand_draw_area)
         for c in self.engine.get_curr_hand():
-            # todo if user dragged it, the starting position will change.
             surf = pygame.image.load(config.assetsroot+c.asset_name())
             screen.blit(surf, location)
             location.x += (config.card_size[0] + config.hand_margin)
