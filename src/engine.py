@@ -4,6 +4,7 @@ from enum import IntEnum, auto
 import socket
 import threading
 import queue
+import pygame
 
 from .board import Board
 from .piece import Piece
@@ -44,6 +45,7 @@ class GameEngine(object):
         # game ends when a player loses his king
         self.game_ended = False
         self.winner = None
+        self.error_message = ' '
 
         # white goes first as per chess tradition
         self.current_player = Player(first_player)
@@ -63,6 +65,7 @@ class GameEngine(object):
         # turn flags
         self.has_placed_to_mana = False
         self.has_moved_piece = False
+        self.has_played_card = False
 
         # debug flag
         self.debug = debug
@@ -129,25 +132,45 @@ class GameEngine(object):
                 newList.append(v)
         return newList
 
+    
+
     # player playes a card in his hand to target on board.
     # if card is piece card, this action places the piece onto the board.
     # raise exception if illegal index or invalid target or insufficient mana
     def play_card(self, card_index: int, target: Union[Vector2, Tuple[int, int]]):
-        if not self.debug and not self.phase == GamePhase.MAIN and not self.phase == GamePhase.SECOND_MAIN:
-            raise IllegalPlayerActionError("you can only play card in main phases")
-
-        if target not in self.valid_positions(card_index):
-            raise IllegalPlayerActionError("cannot place card there")
-
+        try:
+            assert(self.debug and not self.phase == GamePhase.MAIN and not self.phase == GamePhase.SECOND_MAIN)
+        except:
+            self.error_message = 'you can only play card in main phase\n'
+            pass
+        try:
+            assert(self.debug and self.has_played_card)
+        except:
+            self.error_message = 'already placed a card on board before'
+            pass
+        try:
+            assert(target in self.valid_positions(card_index))
+        except:
+            self.error_message = 'you cannot play card here'
         self.current_player.play_card(card_index, target, self.board)
 
+    def text_objects(self, text, font):
+        textSurface = font.render(text, True, config.ui_colors.black)
+        return textSurface, textSurface.get_rect()
 
     # player places a card into mana pile. this action can only be performed once per turn.
-    def place_to_mana_pile(self, card_index: int):
-        if not self.phase == GamePhase.MAIN and not self.phase == GamePhase.SECOND_MAIN:
-            raise IllegalPlayerActionError("you can only place card to mana in main phases")
-        if not self.debug and self.has_placed_to_mana:
-            raise IllegalPlayerActionError("already placed a card to mana before")
+    def place_to_mana_pile(self, card_index: int):       
+        try:#if not self.phase == GamePhase.MAIN:
+            assert(self.phase == GamePhase.MAIN and self.phase == GamePhase.SECOND_MAIN)
+        except: 
+            self.error_message = 'you can only place card to mana in main phase\n'
+            pass   
+        try:         
+            assert(self.debug and self.has_placed_to_mana)
+        except:
+            self.error_message = 'already placed a card to mana before\n'
+            pass
+
         self.current_player.place_to_mana_pile(card_index)
         self.has_placed_to_mana = True
 

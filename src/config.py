@@ -255,7 +255,7 @@ buttons = {
 # sizes
 board_size = (600, 600)
 piece_size = (75, 75)
-card_size = (150, 200)
+card_size = (137, 200)
 # positions
 board_pos = (149, 0)
 hand_start_pos = (20, 680)
@@ -278,6 +278,7 @@ opponent_mana_font = ui_fonts.xs
 opponent_hand_pos = (970, 225)
 opponent_hand_font = ui_fonts.xs
 phase_text_pos = (910, 555)
+error_reminder = (950,300)
 # hand drawing shenanigans
 hand_draw_area = pygame.Rect((0, 661), (901, 240))
 

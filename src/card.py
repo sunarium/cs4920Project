@@ -55,8 +55,8 @@ INITIAL_POSITION_WHITE = {
         (2, 7),
         (5, 7)
     ],
-    'queen': (3, 7),
-    'king': (4, 7)
+    'queen': [(3, 7)],
+    'king': [(4, 7)]
 
 }
 
@@ -77,6 +77,7 @@ class Card(object):
         sList = []
         for v in self.startPos:
             v = Vector2(v)
+            print(v.x)
             sList.append(v)
         return sList
 
