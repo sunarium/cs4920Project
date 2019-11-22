@@ -96,6 +96,10 @@ class MainMenu(GameState):
 class LocalGame(GameState):
     def __init__(self, engine=None):
         super().__init__()
+        pygame.mixer.init()
+        pygame.mixer.music.load("src/bg_music.mp3")
+        pygame.mixer.music.play(-1)
+
         self.buttons = [
             Button(self, config.buttons['back_to_main_ingame'], on_click_callback=self.on_quit),
             Button(self, config.buttons['next_phase'], on_click_callback=self.phase_change),
