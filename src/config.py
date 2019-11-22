@@ -100,6 +100,7 @@ black_indicator = pygame.image.load(assetsroot + 'black_indicator.png')
 white_indicator_active = pygame.image.load(assetsroot + 'white_indicator_active.png')
 white_indicator = pygame.image.load(assetsroot + 'white_indicator.png')
 tm_logo = 'tm.png'
+menu_bg = pygame.image.load(assetsroot + 'menu_bg.png')
 
 # other UI elements
 window_title = 'Chess: The Gathering'
@@ -136,7 +137,7 @@ buttons = {
         'text':'TEXT',
         'left': 0,
         'top': 0,
-        'width': 200,
+        'width': 250,
         'height': 100,
         'font_size':'m',
         'color': ui_colors.light_blue,
@@ -144,7 +145,7 @@ buttons = {
         'text_color': ui_colors.black,
         'help_text': '',
         'help_text_size': 's',
-        'help_text_color': ui_colors.black,
+        'help_text_color': ui_colors.white,
         'help_text_offset': 100,  # px
         'next_state': None,
     },

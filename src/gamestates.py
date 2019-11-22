@@ -72,6 +72,7 @@ class Credits(GameState):
         if offset + self.yoffset < 0:
             self.set_next_state('main_menu')
 
+
 class MainMenu(GameState):
     def __init__(self):
         super().__init__()
@@ -84,7 +85,8 @@ class MainMenu(GameState):
         ]
 
     def render(self, screen:pygame.Surface):
-        screen.fill(config.ui_colors.goldenrod)
+        bg = pygame.image.load('assets/menu_bg.png')
+        screen.blit(bg, (0,0))
         for b in self.buttons:
             b.render(screen)
 
