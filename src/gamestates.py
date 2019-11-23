@@ -85,8 +85,7 @@ class MainMenu(GameState):
         ]
 
     def render(self, screen:pygame.Surface):
-        bg = pygame.image.load('assets/menu_bg.png')
-        screen.blit(bg, (0,0))
+        screen.blit(config.menu_bg, (0,0))
         for b in self.buttons:
             b.render(screen)
 
@@ -97,7 +96,7 @@ class LocalGame(GameState):
     def __init__(self, engine=None):
         super().__init__()
         pygame.mixer.init()
-        pygame.mixer.music.load("src/bg_music.mp3")
+        pygame.mixer.music.load("assets/bg_music.mp3")
         pygame.mixer.music.play(-1)
 
         self.buttons = [
