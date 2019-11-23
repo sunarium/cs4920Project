@@ -14,9 +14,9 @@ from .playercolor import PlayerColor
 from . import config
 
 class GamePhase(IntEnum):
-    MAIN = 0
-    MOVEMENT = 1
-    SECOND_MAIN = 2
+    STRATEGY = 0
+    ACTION = 1
+    FALL_BACK = 2
 
 
 class NetworkStatus(IntEnum):
@@ -51,7 +51,7 @@ class GameEngine(object):
         self.waiting_player = Player(0 - first_player.value)
         self.board = Board()
 
-        self.phase = GamePhase.MAIN
+        self.phase = GamePhase.STRATEGY
 
         #setup game state
         for i in range(0,6):
@@ -64,7 +64,7 @@ class GameEngine(object):
         # turn flags
         self.has_placed_to_mana = False
         self.has_moved_piece = False
-        self.has_played_card = False
+        #self.has_played_card = False
 
         # debug flag
         self.debug = debug
@@ -136,13 +136,13 @@ class GameEngine(object):
     # raise exception if illegal index or invalid target or insufficient mana
     def play_card(self, card_index: int, target: Union[Vector2, Tuple[int, int]]):
         if not self.debug:
-            if not self.phase in (GamePhase.MAIN, GamePhase.SECOND_MAIN):
-                raise IllegalPlayerActionError('you can only play card in main phase')
-            elif self.has_played_card:
-                raise IllegalPlayerActionError('already placed a card on board before')
+            if not self.phase in (GamePhase.STRATEGY, GamePhase.FALL_BACK):
+                raise IllegalPlayerActionError('you can only play card in Strategy or Fall Back phase')
+            #elif self.has_played_card:
+                #raise IllegalPlayerActionError('already placed a card on board before')
             elif target not in self.valid_positions(card_index):
-                raise IllegalPlayerActionError('you cannot play card here')
-        self.has_played_card = True
+                raise IllegalPlayerActionError('you cannot place the piece here')
+        #self.has_played_card = True
         self.current_player.play_card(card_index, target, self.board)
 
     def text_objects(self, text, font):
@@ -152,7 +152,7 @@ class GameEngine(object):
     # player places a card into mana pile. this action can only be performed once per turn.
     def place_to_mana_pile(self, card_index: int):
         if not self.debug:
-            if not self.phase in (GamePhase.MAIN, GamePhase.SECOND_MAIN):
+            if not self.phase in (GamePhase.STRATEGY, GamePhase.FALL_BACK):
                 raise IllegalPlayerActionError('you can only place card to mana in main phase')
             elif self.has_placed_to_mana:
                 raise IllegalPlayerActionError('already placed a card to mana before')
@@ -174,7 +174,7 @@ class GameEngine(object):
     def move_piece(self, piece: Piece, new_pos: Union[Vector2, Tuple[int, int]]):
         # check movement legality
         if (new_pos not in piece.get_legal_moves(self.board) or piece.newly_placed) and not self.debug:
-            raise IllegalPlayerActionError('You cant move there')
+            raise IllegalPlayerActionError('You cannot move there')
 
         # enemy piece capturing
         captured_piece = self.board.get_piece(new_pos)
@@ -196,8 +196,8 @@ class GameEngine(object):
     # otherwise raise exception
     def grab_piece(self, pos):
         if not self.debug:
-            if self.phase != GamePhase.MOVEMENT:
-                raise IllegalPlayerActionError('Can only move piece in movement phase')
+            if self.phase != GamePhase.ACTION:
+                raise IllegalPlayerActionError('Can only move piece in Action Phase')
             if self.has_moved_piece:
                 raise IllegalPlayerActionError('You can only move piece once per turn')
         piece = self.board.get_piece(pos)
@@ -208,20 +208,20 @@ class GameEngine(object):
                 raise IllegalPlayerActionError('You cannot move that piece')
 
     def turn_switch(self):
-        self.phase = GamePhase.MAIN
+        self.phase = GamePhase.STRATEGY
         self.board.on_turn_change()
         self.current_player.on_turn_end()
         self.has_placed_to_mana = False
         self.has_moved_piece = False
-        self.has_played_card = False
+        #self.has_played_card = False
         self.current_player, self.waiting_player = self.waiting_player, self.current_player
         self.current_player.on_turn_start()
         # self.newly_drawn = self.current_player.draw_card()
 
     # called when player end this phase
     def phase_change(self):
-        if self.phase == GamePhase.SECOND_MAIN:
-            self.phase = GamePhase.MAIN
+        if self.phase == GamePhase.FALL_BACK:
+            self.phase = GamePhase.STRATEGY
             self.turn_switch()
         else:
             self.phase += 1

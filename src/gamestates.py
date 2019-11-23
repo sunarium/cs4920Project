@@ -308,11 +308,11 @@ class LocalGame(GameState):
 
         #  draw phase indicator
         if self.engine.phase == 0:
-            text = "Main Phase"
+            text = "Strategy Phase"
         elif self.engine.phase == 1:
             text = "Action Phase"
         elif self.engine.phase == 2:
-            text = "Second Main"
+            text = "Fall Back Phase"
         
         screen.blit(
             config.ui_fonts.s.render(text, True, config.ui_colors.black),
