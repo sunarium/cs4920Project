@@ -6,7 +6,7 @@ from src.exceptions import *
 import pygame
 from pygame import Vector2 as V2
 from abc import ABC, abstractmethod
-from typing import List, Tuple
+from typing import List
 
 class GameState(ABC):
     def __init__(self):
