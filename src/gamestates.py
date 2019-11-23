@@ -72,6 +72,7 @@ class Credits(GameState):
         if offset + self.yoffset < 0:
             self.set_next_state('main_menu')
 
+
 class MainMenu(GameState):
     def __init__(self):
         super().__init__()
@@ -84,7 +85,8 @@ class MainMenu(GameState):
         ]
 
     def render(self, screen:pygame.Surface):
-        screen.fill(config.ui_colors.goldenrod)
+        bg = pygame.image.load('assets/menu_bg.png')
+        screen.blit(bg, (0,0))
         for b in self.buttons:
             b.render(screen)
 
@@ -94,6 +96,10 @@ class MainMenu(GameState):
 class LocalGame(GameState):
     def __init__(self, engine=None):
         super().__init__()
+        pygame.mixer.init()
+        pygame.mixer.music.load("src/bg_music.mp3")
+        pygame.mixer.music.play(-1)
+
         self.buttons = [
             Button(self, config.buttons['back_to_main_ingame'], on_click_callback=self.on_quit),
             Button(self, config.buttons['next_phase'], on_click_callback=self.phase_change),
@@ -302,11 +308,11 @@ class LocalGame(GameState):
 
         #  draw phase indicator
         if self.engine.phase == 0:
-            text = "Main Phase"
+            text = "Strategy Phase"
         elif self.engine.phase == 1:
             text = "Action Phase"
         elif self.engine.phase == 2:
-            text = "Second Main"
+            text = "Fall Back Phase"
         
         screen.blit(
             config.ui_fonts.s.render(text, True, config.ui_colors.black),
