@@ -94,4 +94,5 @@ class Player(object):
 
     def pseudo_play_card(self, name, target, board):
         self.hand.pop(0)
+        print(name)
         PieceCard(name, self.color).played(board, target)

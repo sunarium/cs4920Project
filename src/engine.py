@@ -384,7 +384,7 @@ class NetworkGameEngine(GameEngine):
 
     # overidden methods
     def turn_switch(self):
-        self.phase = GamePhase.MAIN
+        self.phase = GamePhase.STRATEGY
         self.board.on_turn_change()
         self.has_placed_to_mana = False
         self.has_moved_piece = False
@@ -416,12 +416,12 @@ class NetworkGameEngine(GameEngine):
             self.socket.send(message.encode('ascii'))
 
     def play_card(self, card_index: int, target: Union[Vector2, Tuple[int, int]]):
+        cardName = self.current_player.hand[card_index].name
         try:
             super().play_card(card_index, target)
         except IllegalPlayerActionError:
             if self.is_my_turn:
                 raise
-        cardName = self.current_player.hand[card_index].name
         if self.is_my_turn:
             message = f'<PlacedPiece|{cardName}|{target[0]}|{target[1]}>\n'
             self.socket.send(message.encode('ascii'))
