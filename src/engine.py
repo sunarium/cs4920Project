@@ -384,7 +384,7 @@ class NetworkGameEngine(GameEngine):
 
     # overidden methods
     def turn_switch(self):
-        self.phase = GamePhase.MAIN
+        self.phase = GamePhase.STRATEGY
         self.board.on_turn_change()
         self.has_placed_to_mana = False
         self.has_moved_piece = False
